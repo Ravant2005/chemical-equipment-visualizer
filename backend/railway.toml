@@ -1,0 +1,20 @@
+# Railway configuration for FastAPI backend
+# This file tells Railway how to build and deploy the backend
+
+[build]
+# Use NIXPACKS builder (works well with Python/FastAPI)
+builder = "NIXPACKS"
+
+[deploy]
+# Start command - uvicorn runs the FastAPI app
+# --host 0.0.0.0: Bind to all network interfaces (required for Railway)
+# --port $PORT: Use Railway's dynamically assigned port
+startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+
+# Health check path
+healthcheckPath = "/health"
+
+# Restart policy
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+

@@ -12,3 +12,11 @@ class HealthCheckAPIView(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response({"status": "ok"})
+
+
+class ApiRootAPIView(APIView):
+    """Public API root for quick verification."""
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return Response({"status": "ok", "service": "api"})

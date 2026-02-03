@@ -1,10 +1,10 @@
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from .models import Dataset, Equipment
-from .serializers import DatasetSerializer
+from .serializers import DatasetSerializer, EquipmentSerializer
 import pandas as pd
 import csv
 import io
@@ -86,3 +86,11 @@ class DatasetViewSet(ModelViewSet):
         datasets = self.get_queryset()[:5]
         serializer = self.get_serializer(datasets, many=True)
         return Response(serializer.data)
+
+
+class EquipmentViewSet(ReadOnlyModelViewSet):
+    serializer_class = EquipmentSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Equipment.objects.filter(dataset__user=self.request.user).order_by('-id')

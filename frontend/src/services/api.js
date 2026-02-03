@@ -8,7 +8,8 @@ const getApiBaseUrl = () => {
   const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) {
     // Remove trailing slash if present
-    return envUrl.replace(/\/$/, '');
+    const normalized = envUrl.replace(/\/$/, '');
+    return normalized.endsWith('/api') ? normalized : `${normalized}/api`;
   }
   // Default to production placeholder if env not set
   return 'https://your-backend.railway.app/api';
@@ -29,7 +30,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');
   if (token) {
-    config.headers.Authorization = `Token ${token}`;
+    config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });

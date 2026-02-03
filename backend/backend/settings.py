@@ -73,20 +73,23 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # Database - Production-ready configuration
-if os.environ.get('DATABASE_URL'):
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.environ.get('DATABASE_URL'),
-            conn_max_age=600,
-            conn_health_checks=True,
-        )
-    }
-else:
+if DEBUG:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
         }
+    }
+else:
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        raise ValueError('DATABASE_URL environment variable is required in production')
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
     }
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -115,9 +118,12 @@ if DEBUG:
     CORS_ALLOW_ALL_ORIGINS = True
 else:
     cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
-    CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+    CORS_ALLOWED_ORIGINS = [
+        origin.strip().rstrip('/') for origin in cors_origins_env.split(',')
+        if origin.strip()
+    ]
     if not CORS_ALLOWED_ORIGINS:
-        CORS_ALLOW_ALL_ORIGINS = True  # Temporary fix for Railway deployment
+        raise ValueError('CORS_ALLOWED_ORIGINS environment variable is required in production')
 
 
 CORS_ALLOW_CREDENTIALS = True
@@ -162,6 +168,8 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    USE_X_FORWARDED_HOST = True
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 

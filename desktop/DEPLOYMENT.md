@@ -452,7 +452,7 @@ pyinstaller --onefile --console --name "ChemVizPro-Debug" main.py
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CHEMVIZ_API_URL` | Backend API URL | `http://localhost:8000/api` |
+| `CHEMVIZ_API_URL` | Backend API URL | `https://your-backend.railway.app/api` |
 | `PYTHON_CMD` | Python interpreter | `python3` |
 
 ---

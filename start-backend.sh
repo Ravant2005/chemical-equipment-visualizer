@@ -15,7 +15,7 @@ echo "🗄️ Checking database..."
 python manage.py migrate
 
 # Start the server
-echo "🌐 Starting Django server on http://localhost:8001"
-echo "Press Ctrl+C to stop the server"
+echo "🌐 Starting Django server (local: http://127.0.0.1:8001 — production: https://your-backend.railway.app)"
+echo "Press Ctrl+C to stop the local server"
 echo ""
 python manage.py runserver 8001

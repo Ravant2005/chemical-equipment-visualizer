@@ -40,7 +40,8 @@ const History = () => {
   const handleDownload = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const url = `http://localhost:8000/api/datasets/${id}/generate_report/?token=${token}`;
+      const apiBase = import.meta.env.VITE_API_URL || 'https://your-backend.railway.app';
+      const url = `${apiBase}/api/datasets/${id}/generate_report/?token=${token}`;
       window.open(url, '_blank');
       toast.success('Report opened in new tab!');
     } catch (error) {

@@ -217,7 +217,7 @@ The frontend needs to know your backend API URL. Set this in two places:
 2. **Frontend Code** (for local development):
    Create `.env` file in `frontend/` directory:
    ```
-   VITE_API_URL=http://localhost:8000
+   VITE_API_URL=https://your-backend.railway.app
    ```
 
 ### Desktop App API URL
@@ -288,9 +288,9 @@ python main.py
 ```
 
 ### Access Points
-- **Web App**: http://localhost:5173
-- **API**: http://localhost:8000
-- **Admin**: http://localhost:8000/admin (create superuser first)
+- **Web App**: https://your-frontend.vercel.app
+- **API**: https://your-backend.railway.app
+- **Admin**: https://your-backend.railway.app/admin (create superuser first)
 
 ## 🧪 Testing
 

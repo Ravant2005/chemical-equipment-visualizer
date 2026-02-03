@@ -18,12 +18,12 @@ sleep 5
 # Test API endpoints
 echo "🔍 Testing API endpoints..."
 
-# Test health
-curl -s http://localhost:8000/api/auth/login/ > /dev/null
+# Test health (using production placeholder)
+curl -s https://your-backend.railway.app/api/auth/login/ > /dev/null
 if [ $? -eq 0 ]; then
-    echo "✅ Backend is running successfully"
+    echo "✅ Backend is reachable (production placeholder)"
 else
-    echo "❌ Backend connection failed"
+    echo "❌ Backend connection failed (check production URL or run local server)"
 fi
 
 # Kill backend

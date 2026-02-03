@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 // API URL configuration
-// For development: defaults to http://localhost:8000/api
+// Defaults to production placeholder unless VITE_API_URL is set
 // For production: set VITE_API_URL environment variable
 const getApiBaseUrl = () => {
   // Check for environment variable
@@ -10,8 +10,8 @@ const getApiBaseUrl = () => {
     // Remove trailing slash if present
     return envUrl.replace(/\/$/, '');
   }
-  // Default to localhost for development
-  return 'http://localhost:8000/api';
+  // Default to production placeholder if env not set
+  return 'https://your-backend.railway.app/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();

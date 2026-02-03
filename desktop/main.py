@@ -44,7 +44,9 @@ class APIClient:
         if base_url:
             self.base_url = base_url
         else:
-            self.base_url = os.environ.get('CHEMVIZ_API_URL', 'http://localhost:8000/api')
+            # Use environment variable `CHEMVIZ_API_URL` in production.
+            # Default to a production placeholder — replace with your actual backend URL.
+            self.base_url = os.environ.get('CHEMVIZ_API_URL', 'https://your-backend.railway.app/api')
         self.token = None
         self.headers = {"Content-Type": "application/json"}
     

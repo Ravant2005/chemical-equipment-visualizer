@@ -9,7 +9,7 @@ cd /home/s-ravant-vignesh/Documents/chemicalequipment
 ```
 
 **What you should see:**
-- "Starting Django server on http://localhost:8000"
+- "Starting Django server (local: http://127.0.0.1:8000 — production: https://your-backend.railway.app)"
 - Keep this terminal open - DON'T CLOSE IT
 
 ## Step 2: Start the Frontend (Web Application)
@@ -21,9 +21,9 @@ cd /home/s-ravant-vignesh/Documents/chemicalequipment
 ```
 
 **What you should see:**
-- "Starting React development server on http://localhost:5173"
+- "Starting React development server (local: http://127.0.0.1:5173 — production: https://your-frontend.vercel.app)"
 - Your web browser should automatically open
-- If not, go to: http://localhost:5173
+- If not, go to: https://your-frontend.vercel.app
 
 ## Step 3: Use the Web Application
 
@@ -58,7 +58,7 @@ cd /home/s-ravant-vignesh/Documents/chemicalequipment
 
 ## 🛑 How to Stop the Servers
 
-- In each terminal, press `Ctrl + C` to stop the servers
+- In each terminal, press `Ctrl + C` to stop the local servers
 - Close the terminal windows
 
 ## 🆘 If Something Goes Wrong
@@ -84,8 +84,8 @@ cd /home/s-ravant-vignesh/Documents/chemicalequipment
 
 ## 📱 What Each Part Does
 
-- **Backend (Port 8000):** Handles data, authentication, file uploads
-- **Frontend (Port 5173):** The website you see in your browser
+- **Backend:** Handles data, authentication, file uploads (production: https://your-backend.railway.app)
+- **Frontend:** The website you see in your browser (production: https://your-frontend.vercel.app)
 - **Desktop App:** Same functionality but as a desktop program
 
 ## 🎯 Test Data

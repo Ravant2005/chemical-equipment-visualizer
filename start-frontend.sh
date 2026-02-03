@@ -13,7 +13,7 @@ if [ ! -d "node_modules" ]; then
 fi
 
 # Start the development server
-echo "🌐 Starting React development server on http://localhost:5173"
-echo "Press Ctrl+C to stop the server"
+echo "🌐 Starting React development server (local: http://127.0.0.1:5173 — production: https://your-frontend.vercel.app)"
+echo "Press Ctrl+C to stop the local server"
 echo ""
 npm run dev

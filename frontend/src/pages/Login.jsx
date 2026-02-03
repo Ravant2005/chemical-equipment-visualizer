@@ -116,7 +116,7 @@ const Login = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl glass-morphism border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all interactive-element"
+                  className="login-input w-full px-4 py-3 rounded-xl glass-morphism border border-white/20 text-gray-900 placeholder-gray-400 focus:text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all interactive-element"
                   placeholder="Enter your username"
                   required
                 />
@@ -134,7 +134,7 @@ const Login = () => {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl glass-morphism border border-white/20 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all interactive-element"
+                  className="login-input w-full px-4 py-3 rounded-xl glass-morphism border border-white/20 text-gray-900 placeholder-gray-400 focus:text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all interactive-element"
                   placeholder="Enter your password"
                   required
                 />

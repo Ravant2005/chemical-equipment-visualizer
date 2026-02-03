@@ -117,8 +117,76 @@
     transition: left 0.5s;
   }
   
-  .button-glow:hover::before {
+.button-glow:hover::before {
     left: 100%;
+  }
+
+  /* Login input styles - fix for white text on light glass background */
+  .login-input {
+    @apply text-gray-900;
+    caret-color: #111827;
+  }
+
+  .login-input::placeholder {
+    @apply text-gray-400 opacity-80;
+  }
+
+  .login-input:focus {
+    @apply text-gray-900;
+    caret-color: #111827;
+  }
+
+  .login-input:hover:not(:focus):not(:disabled) {
+    @apply text-gray-900;
+  }
+
+  .login-input:disabled {
+    @apply text-gray-600 cursor-not-allowed opacity-70;
+  }
+
+  .login-input:disabled::placeholder {
+    @apply text-gray-500;
+  }
+
+  /* Chrome/Safari autofill fix - prevents white text on autofill */
+  .login-input:-webkit-autofill,
+  .login-input:-webkit-autofill:hover,
+  .login-input:-webkit-autofill:focus,
+  .login-input:-webkit-autofill:active {
+    -webkit-text-fill-color: #111827 !important;
+    -webkit-box-shadow: 0 0 0 30px rgba(255, 255, 255, 0.1) inset !important;
+    caret-color: #111827 !important;
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  /* Firefox autofill fix */
+  @keyframes autofill-fix {
+    from {
+      filter: none;
+    }
+    to {
+      filter: none;
+    }
+  }
+  
+  .login-input:-moz-autofill,
+  .login-input:-moz-autofill:hover,
+  .login-input:-moz-autofill:focus,
+  .login-input:-moz-autofill:active {
+    animation-name: autofill-fix;
+    animation-fill-mode: both;
+    -moz-text-fill-color: #111827 !important;
+    caret-color: #111827 !important;
+  }
+
+  /* Ensure input text stays dark on all interaction states */
+  .login-input:active,
+  .login-input:focus-visible,
+  .login-input:focus-within {
+    @apply text-gray-900;
+    -webkit-text-fill-color: #111827 !important;
+    -moz-text-fill-color: #111827 !important;
+    text-fill-color: #111827 !important;
   }
 }
 

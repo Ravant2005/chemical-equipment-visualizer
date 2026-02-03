@@ -1,14 +1,12 @@
+from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-
-@api_view(["GET"])
+@api_view(['GET'])
 @permission_classes([AllowAny])
-def health(request):
-    """Simple healthcheck for Railway and other load-balancers.
+def health_check(request):
+    return Response({'status': 'ok', 'service': 'chemical-equipment-api'})
 
-    This endpoint must be publicly accessible so platform health checks
-    (Railway, load balancers) receive HTTP 200 without authentication.
-    """
-    return Response({"status": "ok"})
+def health_simple(request):
+    return JsonResponse({'status': 'ok', 'service': 'chemical-equipment-api'})

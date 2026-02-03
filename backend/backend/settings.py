@@ -35,9 +35,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'core',
     'accounts',
     'equipments',
-    'core',
 ]
 
 MIDDLEWARE = [
@@ -116,9 +116,8 @@ if DEBUG:
 else:
     cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
-    # Fallback to empty list - let Railway/Vercel handle the frontend URL if not specified
     if not CORS_ALLOWED_ORIGINS:
-        CORS_ALLOWED_ORIGINS = []  # Will be more permissive with CORS_ALLOW_CREDENTIAL
+        CORS_ALLOW_ALL_ORIGINS = True  # Temporary fix for Railway deployment
 
 
 CORS_ALLOW_CREDENTIALS = True

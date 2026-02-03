@@ -15,8 +15,7 @@ def register(request):
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
         return Response({
-            'access': str(refresh.access_token),
-            'refresh': str(refresh),
+            'token': str(refresh.access_token),
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -34,7 +33,6 @@ def login(request):
     
     refresh = RefreshToken.for_user(user)
     return Response({
-        'access': str(refresh.access_token),
-        'refresh': str(refresh),
+        'token': str(refresh.access_token),
         'user': UserSerializer(user).data
     })

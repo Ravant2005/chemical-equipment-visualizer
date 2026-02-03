@@ -1,18 +1,33 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
+import { useLocation } from 'react-router-dom';
 
 const AnimatedBackground = () => {
   const canvasRef = useRef(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isLoaded, setIsLoaded] = useState(false);
+  const location = useLocation();
+
+  // Disable animation on auth pages for stability
+  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
   useEffect(() => {
+    if (isAuthPage) return; // Skip animation on auth pages
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    
+    // Ensure canvas has valid dimensions
+    const updateCanvasSize = () => {
+      canvas.width = Math.max(window.innerWidth, 1);
+      canvas.height = Math.max(window.innerHeight, 1);
+    };
+    
+    updateCanvasSize();
+    
+    // Guard against zero-size canvas
+    if (canvas.width <= 0 || canvas.height <= 0) return;
 
     // Chemical industry elements
     const molecules = [];
@@ -63,29 +78,57 @@ const AnimatedBackground = () => {
       }
 
       draw() {
+        // Guard against invalid canvas state
+        if (canvas.width <= 0 || canvas.height <= 0) return;
+        
         const pulse = Math.sin(this.pulsePhase) * 0.3 + 1;
         const size = this.size * pulse;
         
-        // Outer glow
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, size * 2, 0, Math.PI * 2);
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, size * 2);
-        gradient.addColorStop(0, this.color.replace('60%', '20%'));
-        gradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        // Validate all gradient parameters
+        const x = Number.isFinite(this.x) ? this.x : 0;
+        const y = Number.isFinite(this.y) ? this.y : 0;
+        const innerRadius = 0;
+        const outerRadius = Number.isFinite(size) && size > 0 ? size * 2 : 1;
         
-        // Main molecule
+        // Only create gradient if all parameters are valid
+        if (
+          Number.isFinite(x) &&
+          Number.isFinite(y) &&
+          Number.isFinite(innerRadius) &&
+          Number.isFinite(outerRadius) &&
+          outerRadius > 0
+        ) {
+          try {
+            // Outer glow
+            ctx.beginPath();
+            ctx.arc(x, y, outerRadius, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(x, y, innerRadius, x, y, outerRadius);
+            gradient.addColorStop(0, this.color.replace('60%', '20%'));
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+          } catch (e) {
+            // Fallback to solid color if gradient fails
+            ctx.fillStyle = this.color;
+            ctx.fill();
+          }
+        }
+        
+        // Main molecule with size validation
+        const validSize = Number.isFinite(size) && size > 0 ? size : 1;
         ctx.beginPath();
-        ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+        ctx.arc(x, y, validSize, 0, Math.PI * 2);
         ctx.fillStyle = this.color;
         ctx.fill();
         
         // Inner highlight
-        ctx.beginPath();
-        ctx.arc(this.x - size * 0.3, this.y - size * 0.3, size * 0.4, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.fill();
+        const highlightSize = validSize * 0.4;
+        if (highlightSize > 0) {
+          ctx.beginPath();
+          ctx.arc(x - validSize * 0.3, y - validSize * 0.3, highlightSize, 0, Math.PI * 2);
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+          ctx.fill();
+        }
       }
     }
 
@@ -189,20 +232,44 @@ const AnimatedBackground = () => {
       }
 
       draw() {
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        const gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-        gradient.addColorStop(0, `rgba(100, 200, 255, ${this.opacity})`);
-        gradient.addColorStop(0.7, `rgba(150, 220, 255, ${this.opacity * 0.5})`);
-        gradient.addColorStop(1, 'transparent');
-        ctx.fillStyle = gradient;
-        ctx.fill();
+        // Guard against invalid canvas state
+        if (canvas.width <= 0 || canvas.height <= 0) return;
         
-        // Bubble highlight
-        ctx.beginPath();
-        ctx.arc(this.x - this.size * 0.3, this.y - this.size * 0.3, this.size * 0.2, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * 0.8})`;
-        ctx.fill();
+        const x = Number.isFinite(this.x) ? this.x : 0;
+        const y = Number.isFinite(this.y) ? this.y : 0;
+        const size = Number.isFinite(this.size) && this.size > 0 ? this.size : 1;
+        
+        // Only create gradient if all parameters are valid
+        if (
+          Number.isFinite(x) &&
+          Number.isFinite(y) &&
+          Number.isFinite(size) &&
+          size > 0
+        ) {
+          try {
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+            gradient.addColorStop(0, `rgba(100, 200, 255, ${this.opacity})`);
+            gradient.addColorStop(0.7, `rgba(150, 220, 255, ${this.opacity * 0.5})`);
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+          } catch (e) {
+            // Fallback to solid color if gradient fails
+            ctx.fillStyle = `rgba(100, 200, 255, ${this.opacity})`;
+            ctx.fill();
+          }
+        }
+        
+        // Bubble highlight with validation
+        const highlightSize = size * 0.2;
+        if (highlightSize > 0) {
+          ctx.beginPath();
+          ctx.arc(x - size * 0.3, y - size * 0.3, highlightSize, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 255, 255, ${this.opacity * 0.8})`;
+          ctx.fill();
+        }
       }
     }
 
@@ -274,8 +341,10 @@ const AnimatedBackground = () => {
     setIsLoaded(true);
 
     const handleResize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      const newWidth = Math.max(window.innerWidth, 1);
+      const newHeight = Math.max(window.innerHeight, 1);
+      canvas.width = newWidth;
+      canvas.height = newHeight;
     };
 
     const handleMouseMove = (e) => {
@@ -293,8 +362,10 @@ const AnimatedBackground = () => {
 
   return (
     <>
-      {/* 3D Chemical Industry Background */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+      {!isAuthPage && (
+        <>
+          {/* 3D Chemical Industry Background */}
+          <div className="fixed inset-0 pointer-events-none z-0">
         {/* Animated gradient background */}
         <div 
           className="absolute inset-0 opacity-40"
@@ -414,6 +485,8 @@ const AnimatedBackground = () => {
           }}
         />
       </div>
+        </>
+      )}
     </>
   );
 };

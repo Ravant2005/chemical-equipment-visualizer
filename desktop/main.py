@@ -1,17 +1,40 @@
-import sys
+# Set Qt environment variables BEFORE any Qt imports to suppress warnings
 import os
+os.environ['QT_DEBUG_PLUGINS'] = '0'
+os.environ['QT_LOGGING_RULES'] = '*.debug=false;qt.qpa.xcb=false;qt.qpa.wayland=false'
+os.environ['QT_ASSUME_STDERR_HAS_CONSOLE'] = '0'
+
+import sys
 import json
+import warnings
+import logging
 import requests
+
+# Suppress Python warnings
+warnings.filterwarnings('ignore')
+logging.getLogger('matplotlib').setLevel(logging.WARNING)
+
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QLineEdit, QFileDialog, QTableWidget,
                               QTableWidgetItem, QTabWidget, QMessageBox, QTextEdit, QGroupBox,
                               QFormLayout, QStackedWidget, QInputDialog, QLineEdit)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPalette
+
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 import pandas as pd
+
+
+# Monkey patch FigureCanvas to suppress propagateSizeHints warning
+_original_init = FigureCanvas.__init__
+
+def _patched_init(self, figure):
+    _original_init(self, figure)
+    self.setSizePolicy(3, 3)  # QSizePolicy.Fixed, QSizePolicy.Fixed to prevent resize issues
+
+FigureCanvas.__init__ = _patched_init
 
 
 class APIClient:

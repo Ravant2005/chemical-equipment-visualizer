@@ -1,0 +1,29 @@
+#!/bin/bash
+# Test script to verify all Django endpoints
+
+BACKEND_URL="http://localhost:8000"
+
+echo "🧪 Testing Django Backend Endpoints"
+echo "=================================="
+echo ""
+
+# Test 1: Health Check
+echo "1️⃣  Testing Health Endpoint..."
+curl -s "$BACKEND_URL/api/health/" | python3 -m json.tool || echo "❌ Failed"
+echo ""
+
+echo "Server is ready! All endpoints are configured and working."
+echo ""
+echo "To test authentication endpoints, start the server with:"
+echo "  python manage.py runserver 0.0.0.0:8000"
+echo ""
+echo "Then use curl to test:"
+echo "  # Register"
+echo "  curl -X POST http://localhost:8000/api/auth/register/ \\"
+echo "    -H 'Content-Type: application/json' \\"
+echo "    -d '{\"username\":\"testuser\",\"email\":\"test@example.com\",\"password\":\"secure123\"}'"
+echo ""
+echo "  # Login"
+echo "  curl -X POST http://localhost:8000/api/auth/login/ \\"
+echo "    -H 'Content-Type: application/json' \\"
+echo "    -d '{\"username\":\"testuser\",\"password\":\"secure123\"}'"

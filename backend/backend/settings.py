@@ -115,8 +115,10 @@ if DEBUG:
 else:
     cors_origins_env = os.environ.get('CORS_ALLOWED_ORIGINS', '')
     CORS_ALLOWED_ORIGINS = [origin.strip() for origin in cors_origins_env.split(',') if origin.strip()]
+    # Fallback to empty list - let Railway/Vercel handle the frontend URL if not specified
     if not CORS_ALLOWED_ORIGINS:
-        raise ValueError('CORS_ALLOWED_ORIGINS environment variable is required in production')
+        CORS_ALLOWED_ORIGINS = []  # Will be more permissive with CORS_ALLOW_CREDENTIAL
+
 
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [

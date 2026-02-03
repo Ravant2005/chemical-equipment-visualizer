@@ -2,6 +2,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from .models import Dataset, Equipment
 from .serializers import DatasetSerializer
 import pandas as pd
@@ -10,12 +11,18 @@ import io
 
 class DatasetViewSet(ModelViewSet):
     serializer_class = DatasetSerializer
+    permission_classes = [IsAuthenticated]
     
     def get_queryset(self):
-        return Dataset.objects.filter(user=self.request.user)[:5]
+        return Dataset.objects.filter(user=self.request.user).order_by('-uploaded_at')
+    
+    def perform_create(self, serializer):
+        """Set the user when creating a dataset"""
+        serializer.save(user=self.request.user)
     
     @action(detail=False, methods=['post'])
     def upload(self, request):
+        """Upload a CSV file with equipment data"""
         if 'file' not in request.FILES:
             return Response({'error': 'No file provided'}, status=status.HTTP_400_BAD_REQUEST)
         
@@ -28,12 +35,15 @@ class DatasetViewSet(ModelViewSet):
             required_columns = ['Equipment Name', 'Type', 'Flowrate', 'Pressure', 'Temperature']
             
             if not all(col in df.columns for col in required_columns):
-                return Response({'error': 'Missing required columns'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    {'error': f'Missing required columns. Expected: {", ".join(required_columns)}'}, 
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
             total_count = len(df)
-            avg_flowrate = df['Flowrate'].mean()
-            avg_pressure = df['Pressure'].mean()
-            avg_temperature = df['Temperature'].mean()
+            avg_flowrate = float(df['Flowrate'].mean())
+            avg_pressure = float(df['Pressure'].mean())
+            avg_temperature = float(df['Temperature'].mean())
             equipment_distribution = df['Type'].value_counts().to_dict()
             
             dataset = Dataset.objects.create(
@@ -52,9 +62,9 @@ class DatasetViewSet(ModelViewSet):
                     dataset=dataset,
                     equipment_name=row['Equipment Name'],
                     equipment_type=row['Type'],
-                    flowrate=row['Flowrate'],
-                    pressure=row['Pressure'],
-                    temperature=row['Temperature']
+                    flowrate=float(row['Flowrate']),
+                    pressure=float(row['Pressure']),
+                    temperature=float(row['Temperature'])
                 ))
             
             Equipment.objects.bulk_create(equipment_records)
@@ -72,6 +82,7 @@ class DatasetViewSet(ModelViewSet):
     
     @action(detail=False, methods=['get'])
     def history(self, request):
-        datasets = self.get_queryset()
+        """Get upload history for the current user (last 5)"""
+        datasets = self.get_queryset()[:5]
         serializer = self.get_serializer(datasets, many=True)
         return Response(serializer.data)

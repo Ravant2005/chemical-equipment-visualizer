@@ -71,8 +71,20 @@ npm run dev
 
 # Desktop (new terminal)
 cd desktop
+
+# Option 1: Automated setup (recommended)
+chmod +x setup-venv.sh
+./setup-venv.sh
+
+# Option 2: Manual setup
+python3 -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate  # Windows
 pip install -r requirements.txt
 python main.py
+
+# Note for Linux/Ubuntu: If Qt display errors occur, install:
+# sudo apt update && sudo apt install -y libxcb1 libxcb-xkb-dev libxkbcommon-x11-dev
 ```
 
 ## 📁 Project Structure

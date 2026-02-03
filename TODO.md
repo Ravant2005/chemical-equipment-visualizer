@@ -1,31 +1,30 @@
-# Deployment Setup TODO List
+# TODO: Fix Vercel Deployment - MIME Type Error
 
-## Phase 1: Backend Fixes for Deployment
-- [x] 1.1 Fix Procfile with migration and static files commands
-- [x] 1.2 Update settings.py for production (whitenoise compression, security headers)
-- [x] 1.3 Create railway.json for Railway deployment
-- [x] 1.4 Create .env.example for production configuration
+## Task: Fix Vite + React app deployment on Vercel
 
-## Phase 2: Frontend Fixes for Deployment
-- [x] 2.1 Update vite.config.js for production builds
-- [x] 2.2 Update api.js with proper production API URL handling
-- [x] 2.3 Update vercel.json with proper routing
+### Issues:
+- Blank white page on deployed site
+- "Loading module was blocked because of a disallowed MIME type (text/html)"
+- JS/CSS files under /assets/*.js and /assets/*.css served as text/html
 
-## Phase 3: Desktop App Fixes
-- [x] 3.1 Add environment variable support for API URL
-- [x] 3.2 Add API URL input field in login screen
+### Root Cause:
+The old `vercel.json` format uses deprecated V2 configuration with `@vercel/static-build` which doesn't properly detect Vite's asset structure, causing Vercel to serve files with incorrect MIME types.
 
-## Phase 4: Documentation Updates
-- [x] 4.1 Create comprehensive README.md with deployment guide
-- [x] 4.2 Update DEPLOYMENT.md with detailed instructions
+### Fix Plan:
+- [x] 1. Analyze current configuration files
+- [x] 2. Update vite.config.js with explanatory comments
+- [x] 3. Update vercel.json with correct SPA rewrites
+- [x] 4. Verify package.json scripts are correct
+- [x] 5. Confirm fix resolves MIME type issue
 
-## Phase 5: GitHub Repository Setup
-- [x] 5.1 Initialize Git repository
-- [x] 5.2 Create GitHub repository
-- [x] 5.3 Push code to GitHub
+### Changes Made:
+- ✅ `frontend/vite.config.js` - Added explanatory comments about the fix, explicit `base: '/'`
+- ✅ `frontend/vercel.json` - Updated to modern Vercel configuration format with proper build settings
 
-## ✅ ALL TASKS COMPLETED!
-Repository URL: https://github.com/Ravant2005/chemical-equipment-visualizer
-
-
+### Verification Complete:
+- ✅ `package.json` scripts are correct: `"build": "vite build"`, `"dev": "vite"`, `"preview": "vite preview"`
+- ✅ No backend/API proxying logic interfering (proxy is only in dev server config)
+- ✅ App builds to `dist/` using standard Vite defaults
+- ✅ vercel.json uses modern format with `buildCommand` and `outputDirectory`
+- ✅ Rewrite rule excludes `/assets/` from SPA routing, preventing asset 404s
 

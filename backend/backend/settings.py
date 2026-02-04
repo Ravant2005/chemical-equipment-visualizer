@@ -26,10 +26,14 @@ if not SECRET_KEY:
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 
 # ALLOWED_HOSTS: Production-safe configuration
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS", 
+    ".railway.app,localhost,127.0.0.1"
+).split(",")
 
-CSRF_TRUSTED_ORIGINS = os.getenv(
-    "CSRF_TRUSTED_ORIGINS", ""
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    "CSRF_TRUSTED_ORIGINS", 
+    "https://*.railway.app,http://localhost:5173,http://127.0.0.1:5173"
 ).split(",")
 
 CORS_ALLOW_ALL_ORIGINS = os.getenv(
@@ -63,11 +67,9 @@ if DEBUG:
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    # Whitenoise middleware MUST be here, not in INSTALLED_APPS
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    # CORS middleware should be placed as high as possible
-    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -132,17 +134,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CORS CONFIGURATION ---
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS", 
-    "http://localhost:5173,http://127.0.0.1:5173"
-).split(",")
+CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_TRUSTED_ORIGINS = os.environ.get(
-    "CSRF_TRUSTED_ORIGINS", 
-    "http://localhost:5173,http://127.0.0.1:5173"
-).split(",")
-
-CORS_ALLOW_CREDENTIALS = True
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

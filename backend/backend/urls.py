@@ -4,16 +4,19 @@ Production-ready URL routing for Railway deployment.
 """
 from django.contrib import admin
 from django.urls import path, include
-from core.views import health_check_view
+from django.http import HttpResponse
+
+def simple_health(request):
+    return HttpResponse("OK", status=200)
 
 urlpatterns = [
+    # Health check for Railway (MANDATORY) - simple, no dependencies
+    path('api/health/', simple_health),
+    
     # Django Admin
     path('admin/', admin.site.urls),
     
-    # Health check for Railway (MANDATORY)
-    path('api/health/', health_check_view, name='health_check'),
-    
-    # API routes - single canonical root
+    # API routes
     path('api/', include('accounts.urls')),
     path('api/', include('equipments.urls')),
 ]

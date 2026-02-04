@@ -29,8 +29,13 @@ if not SECRET_KEY:
     raise ValueError("A SECRET_KEY environment variable is required.")
 
 # DEBUG: Defaults to False for production safety.
-# The string 'False' is what Render/Railway often set by default.
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
+
+# ALLOWED_HOSTS: Production-safe configuration
+# Reads a comma-separated list from the ALLOWED_HOSTS env var.
+# Defaults include localhost and the Railway-provided domain.
+ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
+
 
 # --- APPLICATION DEFINITION ---
 
@@ -40,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
-    'whitenoise.runserver_nostatic',  # For development
+    'whitenoise.middleware.WhiteNoiseMiddleware', # Add whitenoise to middleware
     'django.contrib.staticfiles',
 
     # Third-party apps
@@ -53,6 +58,11 @@ INSTALLED_APPS = [
     'accounts',
     'equipments',
 ]
+
+# Add whitenoise.runserver_nostatic only in development
+if DEBUG:
+    INSTALLED_APPS.insert(5, 'whitenoise.runserver_nostatic')
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -98,9 +108,11 @@ DATABASES = {
     "default": dj_database_url.config(
         default="sqlite:///db.sqlite3",
         conn_max_age=600,
-        ssl_require=True
+        conn_health_checks=True,
     )
 }
+
+
 
 
 # --- PASSWORD VALIDATION ---
@@ -138,21 +150,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- NETWORKING AND SECURITY ---
 
-# ALLOWED_HOSTS: Production-safe configuration
-# In development (DEBUG=True), this is not critical. For production,
-# it reads a comma-separated list from the ALLOWED_HOSTS env var.
-# Defaults include localhost and the Railway-provided domain.
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1,.railway.app"
-).split(",")
-
-
 # CORS (Cross-Origin Resource Sharing) Settings
-CORS_ALLOWED_ORIGINS = os.environ.get(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:5173"
-).split(",")
+CORS_ALLOWED_ORIGINS = os.environ.get("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173").split(",")
+
 
 
 CORS_ALLOW_CREDENTIALS = True

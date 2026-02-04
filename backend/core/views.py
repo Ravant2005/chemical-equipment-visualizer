@@ -1,13 +1,9 @@
-from django.http import JsonResponse
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.cache import never_cache
 
-@api_view(['GET'])
-@permission_classes([AllowAny])
+@csrf_exempt
+@never_cache
 def health_check_view(request):
-    """
-    Health check endpoint for Railway deployment.
-    MUST return 200 OK with JSON response.
-    No database dependency to avoid startup issues.
-    """
-    return JsonResponse({"status": "ok"})
+    """Minimal health check for Railway - no DB, no auth, no middleware dependencies"""
+    return HttpResponse("OK", content_type="text/plain", status=200)

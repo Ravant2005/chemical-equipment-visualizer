@@ -26,10 +26,15 @@ if not SECRET_KEY:
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
 
 # ALLOWED_HOSTS: Production-safe configuration
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS", 
-    "localhost,127.0.0.1,.railway.app"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
+
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS", ""
 ).split(",")
+
+CORS_ALLOW_ALL_ORIGINS = os.getenv(
+    "CORS_ALLOW_ALL_ORIGINS", "False"
+) == "True"
 
 # --- APPLICATION DEFINITION ---
 

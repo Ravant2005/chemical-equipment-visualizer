@@ -95,10 +95,10 @@ ASGI_APPLICATION = 'backend.asgi.application'
 # Uses dj-database-url to parse the DATABASE_URL environment variable.
 # Defaults to a local SQLite database for development if DATABASE_URL is not set.
 DATABASES = {
-    'default': dj_database_url.config(
-        default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}",
+    "default": dj_database_url.config(
+        default="sqlite:///db.sqlite3",
         conn_max_age=600,
-        conn_health_checks=True,
+        ssl_require=True
     )
 }
 
@@ -142,29 +142,19 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # In development (DEBUG=True), this is not critical. For production,
 # it reads a comma-separated list from the ALLOWED_HOSTS env var.
 # Defaults include localhost and the Railway-provided domain.
-ALLOWED_HOSTS_str = os.environ.get('ALLOWED_HOSTS', '127.0.0.1,localhost,.railway.app')
-ALLOWED_HOSTS = [host.strip() for host in ALLOWED_HOSTS_str.split(',')]
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,.railway.app"
+).split(",")
 
 
 # CORS (Cross-Origin Resource Sharing) Settings
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
-    if origin.strip()
-]
-# If the environment variable is empty, it's safer to have an empty list
-# than allowing all origins. For local development, common React/Vue ports are added.
-if not CORS_ALLOWED_ORIGINS and DEBUG:
-    CORS_ALLOWED_ORIGINS = [
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173",
-    ]
+CORS_ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ALLOWED_ORIGINS",
+    "http://localhost:5173"
+).split(",")
 
-# CSRF (Cross-Site Request Forgery) Protection
-# For production deployments with a separate frontend, CSRF_TRUSTED_ORIGINS must be set.
-CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
 CORS_ALLOW_CREDENTIALS = True
 
 

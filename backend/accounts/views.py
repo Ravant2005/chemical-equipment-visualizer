@@ -6,6 +6,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 from .serializers import RegisterSerializer, UserSerializer
 
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register(request):
@@ -19,6 +20,7 @@ def register(request):
             'user': UserSerializer(user).data
         }, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
@@ -36,3 +38,4 @@ def login(request):
         'token': str(refresh.access_token),
         'user': UserSerializer(user).data
     })
+

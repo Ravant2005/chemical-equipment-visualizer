@@ -6,8 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from .models import Dataset, Equipment
 from .serializers import DatasetSerializer, EquipmentSerializer
 import pandas as pd
-import csv
-import io
+
 
 class DatasetViewSet(ModelViewSet):
     serializer_class = DatasetSerializer
@@ -94,3 +93,4 @@ class EquipmentViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         return Equipment.objects.filter(dataset__user=self.request.user).order_by('-id')
+

@@ -1,19 +1,8 @@
-# Railway configuration for Django backend
-# This file tells Railway how to build and deploy the backend
-
 [build]
-# Use NIXPACKS builder (works well with Python/Django)
-builder = "NIXPACKS"
+builder = "nixpacks"
 
 [deploy]
-# Start command - gunicorn runs the Django app
-# Run migrations first, then start gunicorn
-startCommand = "python manage.py migrate && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT"
-
-# Health check path
+startCommand = "python manage.py migrate --noinput && python manage.py collectstatic --noinput && gunicorn backend.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
 healthcheckPath = "/api/health/"
-
-# Restart policy
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-

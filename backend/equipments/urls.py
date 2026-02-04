@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
-from .views import DatasetViewSet, EquipmentViewSet
+from .views import DatasetViewSet
 
+# Router creates: /api/datasets/, /api/datasets/{id}/, etc.
 router = DefaultRouter()
 router.register('datasets', DatasetViewSet, basename='dataset')
-router.register('equipments', EquipmentViewSet, basename='equipment')
 urlpatterns = router.urls

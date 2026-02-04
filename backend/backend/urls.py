@@ -1,22 +1,19 @@
 """
 Backend URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.2/topics/http/urls/
+Production-ready URL routing for Railway deployment.
 """
 from django.contrib import admin
 from django.urls import path, include
-from core.views import public_health_check
+from core.views import health_check_view
 
 urlpatterns = [
     # Django Admin
     path('admin/', admin.site.urls),
-
-    # Health check for deployment services like Railway
-    path('health', public_health_check, name='public_health_check'),
-
-    # API routes
-    path('api/health/', include('core.urls')),
-    path('api/auth/', include('accounts.urls')),
-    path('api/equipments/', include('equipments.urls')),
+    
+    # Health check for Railway (MANDATORY)
+    path('api/health/', health_check_view, name='health_check'),
+    
+    # API routes - single canonical root
+    path('api/', include('accounts.urls')),
+    path('api/', include('equipments.urls')),
 ]

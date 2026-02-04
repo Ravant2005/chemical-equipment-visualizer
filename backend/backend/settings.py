@@ -29,11 +29,10 @@ ALLOWED_HOSTS = ["*"]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://*.railway.app",
+    "https://*.up.railway.app",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
 ]
-
-CORS_ALLOW_ALL_ORIGINS = os.getenv(
-    "CORS_ALLOW_ALL_ORIGINS", "False"
-) == "True"
 
 # --- APPLICATION DEFINITION ---
 
@@ -131,9 +130,6 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # --- CORS CONFIGURATION ---
 CORS_ALLOW_ALL_ORIGINS = True
 
-CSRF_COOKIE_SECURE = not DEBUG
-SESSION_COOKIE_SECURE = not DEBUG
-
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -162,5 +158,4 @@ if not DEBUG:
     SECURE_HSTS_PRELOAD = True
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+

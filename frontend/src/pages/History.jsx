@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Trash2, Eye, Download } from 'lucide-react';
-import { datasetAPI } from '../services/api';
+import { datasetAPI, API_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -40,8 +40,7 @@ const History = () => {
   const handleDownload = async (id) => {
     try {
       const token = localStorage.getItem('token');
-      const apiBase = import.meta.env.VITE_API_URL || 'https://your-backend.railway.app';
-      const url = `${apiBase}/api/datasets/${id}/generate_report/?token=${token}`;
+      const url = `${API_BASE_URL}/datasets/${id}/generate_report/?token=${token}`;
       window.open(url, '_blank');
       toast.success('Report opened in new tab!');
     } catch (error) {

@@ -2,19 +2,24 @@ import axios from 'axios';
 
 // API URL configuration
 // Supports both local development and production deployment
+const ensureApiSuffix = (url) => {
+  if (!url) return url;
+  const trimmed = url.replace(/\/+$/, '');
+  return trimmed.endsWith('/api') ? trimmed : `${trimmed}/api`;
+};
+
 const getApiBaseUrl = () => {
   // Check for environment variable (production on Vercel)
-  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL;
-  
+  const envUrl = import.meta.env.VITE_API_URL;
   if (envUrl) {
-    return envUrl;
+    return ensureApiSuffix(envUrl);
   }
-  
+
   // Fallback to localhost for local development
   return 'http://127.0.0.1:8000/api';
 };
 
-const API_BASE_URL = getApiBaseUrl();
+export const API_BASE_URL = getApiBaseUrl();
 
 // Only log in development to avoid exposing production URLs in console
 if (import.meta.env.DEV) {

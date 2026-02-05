@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, Download, TrendingUp, Activity, Thermometer, Gauge } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
-import { datasetAPI } from '../services/api';
+import { datasetAPI, API_BASE_URL } from '../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -37,8 +37,7 @@ const Dashboard = () => {
     
     try {
       const token = localStorage.getItem('token');
-      const apiBase = import.meta.env.VITE_API_URL || 'https://your-backend.railway.app';
-      const url = `${apiBase}/api/datasets/${dataset.id}/generate_report/?token=${token}`;
+      const url = `${API_BASE_URL}/datasets/${dataset.id}/generate_report/?token=${token}`;
       window.open(url, '_blank');
       toast.success('Report opened in new tab!');
     } catch (error) {

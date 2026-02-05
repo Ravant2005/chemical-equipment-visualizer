@@ -8,6 +8,7 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import dj_database_url
 from corsheaders.defaults import default_headers
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,14 +31,20 @@ ALLOWED_HOSTS = [
     '.onrender.com',  # All Render services
 ]
 
-# CSRF trusted origins for cross-origin requests (exact domains only)
+# CSRF trusted origins for cross-origin requests
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+    'https://*.vercel.app',
 ]
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
+BACKEND_URL = os.environ.get('BACKEND_URL')
 if FRONTEND_URL:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+if BACKEND_URL:
+    CSRF_TRUSTED_ORIGINS.append(BACKEND_URL)
 
 # --- APPLICATION DEFINITION ---
 
@@ -102,13 +109,17 @@ DATABASES = {
 }
 
 # PostgreSQL configuration for Render (when DATABASE_URL is set)
-DATABASES['default'] = dj_database_url.config(default=None, conn_max_age=500)
-# Fallback to SQLite if DATABASE_URL not set (local development)
+DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=500)
+# Fallback to SQLite only for local development
 if not DATABASES['default']:
-    DATABASES['default'] = {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    if DEBUG:
+        DATABASES['default'] = {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    else:
+        raise ImproperlyConfigured("DATABASE_URL must be set in production.")
 
 # --- PASSWORD VALIDATION ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -137,9 +148,14 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- SECURITY SETTINGS (Production) ---
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
+
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SAMESITE = 'None'
+    CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -150,15 +166,20 @@ if not DEBUG:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 if FRONTEND_URL:
     CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
-# Allow Authorization header (defaults already include it; keep explicit)
-CORS_ALLOW_HEADERS = list(default_headers)
+# Explicit headers for auth + CSRF
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "authorization",
+    "x-csrftoken",
+]
 
 # Allow credentials for cross-origin requests
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

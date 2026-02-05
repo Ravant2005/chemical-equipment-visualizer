@@ -7,6 +7,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import dj_database_url
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,12 +30,14 @@ ALLOWED_HOSTS = [
     '.onrender.com',  # All Render services
 ]
 
-# CSRF trusted origins for cross-origin requests
+# CSRF trusted origins for cross-origin requests (exact domains only)
 CSRF_TRUSTED_ORIGINS = [
     'http://localhost:3000',
     'http://127.0.0.1:3000',
-    'https://*.vercel.app',  # Vercel frontend deployments
 ]
+FRONTEND_URL = os.environ.get('FRONTEND_URL')
+if FRONTEND_URL:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
 # --- APPLICATION DEFINITION ---
 
@@ -59,9 +62,9 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files serving (after SecurityMiddleware)
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -147,15 +150,15 @@ if not DEBUG:
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://*.vercel.app",  # Vercel frontend deployments
 ]
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
+
+# Allow Authorization header (defaults already include it; keep explicit)
+CORS_ALLOW_HEADERS = list(default_headers)
 
 # Allow credentials for cross-origin requests
-CORS_ALLOW_CREDENTIALS = True
-
-# Session cookie settings for cross-origin requests
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
+CORS_ALLOW_CREDENTIALS = False
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {
@@ -174,4 +177,3 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
-

@@ -7,7 +7,6 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 import dj_database_url
-from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,17 +28,6 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
     '.onrender.com',  # All Render services
 ]
-
-# CSRF trusted origins for cross-origin requests
-CSRF_TRUSTED_ORIGINS = [
-    'http://localhost:3000',
-    'http://127.0.0.1:3000',
-    'http://localhost:5173',
-    'http://127.0.0.1:5173',
-]
-FRONTEND_URL = os.environ.get('FRONTEND_URL')
-if FRONTEND_URL:
-    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
 
 # --- APPLICATION DEFINITION ---
 
@@ -63,15 +51,17 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files serving (after SecurityMiddleware)
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "django.middleware.security.SecurityMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
+
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -143,30 +133,31 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
-# --- CORS CONFIGURATION ---
+# ===============================
+# CORS CONFIG (JWT ONLY)
+# ===============================
+
 CORS_ALLOWED_ORIGINS = [
+    "https://chemical-equipment-visualizer-khaki.vercel.app",
     "http://localhost:3000",
-    "http://127.0.0.1:3000",
     "http://localhost:5173",
-    "http://127.0.0.1:5173",
-]
-if FRONTEND_URL:
-    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
-
-# Explicit headers for auth + CSRF
-CORS_ALLOW_HEADERS = list(default_headers) + [
-    "authorization",
-    "x-csrftoken",
 ]
 
-# JWT auth uses Authorization headers, not cookies
 CORS_ALLOW_CREDENTIALS = False
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+]
+
+# Disable CSRF interference for JWT-only APIs
+CSRF_USE_SESSIONS = False
+CSRF_COOKIE_HTTPONLY = False
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

@@ -1,16 +1,25 @@
 import axios from 'axios';
 
 // API URL configuration
-// Defaults to production placeholder unless VITE_API_URL is set
-// For production: set VITE_API_URL environment variable
+// Supports both local development and production deployment
 const getApiBaseUrl = () => {
-  // Always use the local development URL
+  // Check for environment variable (production on Vercel)
+  const envUrl = import.meta.env.VITE_API_URL || import.meta.env.VITE_BACKEND_URL;
+  
+  if (envUrl) {
+    return envUrl;
+  }
+  
+  // Fallback to localhost for local development
   return 'http://127.0.0.1:8000/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
 
-console.log(`API Base URL: ${API_BASE_URL}`); // Debug log
+// Only log in development to avoid exposing production URLs in console
+if (import.meta.env.DEV) {
+  console.log(`API Base URL: ${API_BASE_URL}`);
+}
 
 const api = axios.create({
   baseURL: API_BASE_URL,

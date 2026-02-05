@@ -6,6 +6,7 @@ import os
 from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -15,13 +16,25 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # --- CORE SETTINGS ---
 
-# SECRET_KEY: Make sure to set this in your .env file
+# SECRET_KEY: Make sure to set this in your .env file for production
 SECRET_KEY = os.environ.get('SECRET_KEY', 'a-secure-default-key-for-development')
 
-# DEBUG: Should be True for local development
-DEBUG = True
+# DEBUG: Auto-detect production vs development
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+# ALLOWED_HOSTS: Configure for Render + localhost + Vercel frontend
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    '.onrender.com',  # All Render services
+]
+
+# CSRF trusted origins for cross-origin requests
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:3000',
+    'http://127.0.0.1:3000',
+    'https://*.vercel.app',  # Vercel frontend deployments
+]
 
 # --- APPLICATION DEFINITION ---
 
@@ -46,6 +59,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Static files serving (after SecurityMiddleware)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -76,13 +90,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # --- DATABASE ---
-# Simple SQLite database for local development
+# Use PostgreSQL via DATABASE_URL in production (Render), SQLite for local dev
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# PostgreSQL configuration for Render (when DATABASE_URL is set)
+DATABASES['default'] = dj_database_url.config(default=None, conn_max_age=500)
+# Fallback to SQLite if DATABASE_URL not set (local development)
+if not DATABASES['default']:
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # --- PASSWORD VALIDATION ---
 AUTH_PASSWORD_VALIDATORS = [
@@ -102,16 +125,37 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+# WhiteNoise configuration for production static file serving
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# --- SECURITY SETTINGS (Production) ---
+if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+
+
 # --- CORS CONFIGURATION ---
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
+    "https://*.vercel.app",  # Vercel frontend deployments
 ]
+
+# Allow credentials for cross-origin requests
+CORS_ALLOW_CREDENTIALS = True
+
+# Session cookie settings for cross-origin requests
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

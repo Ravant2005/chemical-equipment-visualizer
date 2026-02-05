@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import authenticate
@@ -38,4 +38,19 @@ def login(request):
         'token': str(refresh.access_token),
         'user': UserSerializer(user).data
     })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """Return the current authenticated user's data"""
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def logout(request):
+    """A simple endpoint for acknowledging logout. Frontend handles token removal."""
+    return Response(status=status.HTTP_204_NO_CONTENT)
 

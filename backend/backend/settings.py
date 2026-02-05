@@ -1,11 +1,9 @@
 """
 Django settings for the backend project.
-Production-ready configuration for Railway deployment.
 """
 
 import os
 from pathlib import Path
-import dj_database_url
 from dotenv import load_dotenv
 from datetime import timedelta
 
@@ -17,22 +15,13 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 # --- CORE SETTINGS ---
 
-# SECRET_KEY: MANDATORY for production
-SECRET_KEY = os.environ.get('SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("SECRET_KEY environment variable is required")
+# SECRET_KEY: Make sure to set this in your .env file
+SECRET_KEY = os.environ.get('SECRET_KEY', 'a-secure-default-key-for-development')
 
-# DEBUG: Defaults to False for production safety
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 't')
+# DEBUG: Should be True for local development
+DEBUG = True
 
-ALLOWED_HOSTS = ["*"]
-
-CSRF_TRUSTED_ORIGINS = [
-    "https://*.railway.app",
-    "https://*.up.railway.app",
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-]
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 # --- APPLICATION DEFINITION ---
 
@@ -55,13 +44,8 @@ INSTALLED_APPS = [
     'equipments',
 ]
 
-# Add whitenoise.runserver_nostatic only in development
-if DEBUG:
-    INSTALLED_APPS.insert(-3, 'whitenoise.runserver_nostatic')
-
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -92,15 +76,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 # --- DATABASE ---
-# Uses dj-database-url to parse the DATABASE_URL environment variable
-# Railway provides DATABASE_URL automatically for PostgreSQL
+# Simple SQLite database for local development
 DATABASES = {
-    "default": dj_database_url.config(
-        default="sqlite:///db.sqlite3",
-        conn_max_age=600,
-        conn_health_checks=True,
-        ssl_require=not DEBUG,  # Require SSL in production
-    )
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 }
 
 # --- PASSWORD VALIDATION ---
@@ -120,7 +101,6 @@ USE_TZ = True
 # --- STATIC FILES & MEDIA ---
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -128,7 +108,10 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- CORS CONFIGURATION ---
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {
@@ -136,7 +119,7 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',  # Allow any for local development
     ],
 }
 
@@ -147,15 +130,4 @@ SIMPLE_JWT = {
     "ROTATE_REFRESH_TOKENS": True,
     "BLACKLIST_AFTER_ROTATION": True,
 }
-
-# --- PRODUCTION SECURITY SETTINGS ---
-if not DEBUG:
-    SECURE_BROWSER_XSS_FILTER = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    X_FRAME_OPTIONS = 'DENY'
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_SSL_REDIRECT = True
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 

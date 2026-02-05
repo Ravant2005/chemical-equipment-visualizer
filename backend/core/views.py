@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 
 
 def health_check(request):
@@ -13,4 +13,13 @@ def health_check(request):
     - No external services
     """
     return HttpResponse("OK", status=200)
+
+
+def api_root(request):
+    """
+    Root API view providing service information.
+    """
+    return JsonResponse(
+        {"status": "ok", "service": "Chemical Equipment Backend", "version": "1.0"}
+    )
 

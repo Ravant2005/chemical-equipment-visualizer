@@ -4,15 +4,8 @@ import axios from 'axios';
 // Defaults to production placeholder unless VITE_API_URL is set
 // For production: set VITE_API_URL environment variable
 const getApiBaseUrl = () => {
-  // Check for environment variable
-  const envUrl = import.meta.env.VITE_API_URL;
-  if (envUrl) {
-    // Remove trailing slash if present
-    const normalized = envUrl.replace(/\/$/, '');
-    return normalized.endsWith('/api') ? normalized : `${normalized}/api`;
-  }
-  // Default to production placeholder if env not set
-  return 'https://your-backend.railway.app/api';
+  // Always use the local development URL
+  return 'http://127.0.0.1:8000/api';
 };
 
 const API_BASE_URL = getApiBaseUrl();
@@ -51,16 +44,16 @@ api.interceptors.response.use(
 // Auth API
 export const authAPI = {
   register: (username, email, password) =>
-    api.post('/auth/register/', { username, email, password }),
+    api.post('/accounts/auth/register/', { username, email, password }),
   
   login: (username, password) =>
-    api.post('/auth/login/', { username, password }),
+    api.post('/accounts/auth/login/', { username, password }),
   
   logout: () =>
-    api.post('/auth/logout/'),
+    api.post('/accounts/auth/logout/'),
   
   getCurrentUser: () =>
-    api.get('/auth/user/'),
+    api.get('/accounts/auth/user/'),
 };
 
 // Dataset API

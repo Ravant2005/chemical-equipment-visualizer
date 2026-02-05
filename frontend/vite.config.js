@@ -30,24 +30,14 @@ export default defineConfig({
     port: 3000,
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || 'https://your-backend.railway.app',
+        target: 'http://127.0.0.1:8000',
         changeOrigin: true,
       },
     },
   },
   
   build: {
-    // Standard Vite output directory - Vercel will serve from here
     outDir: 'dist',
-    sourcemap: false,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          charts: ['chart.js', 'react-chartjs-2'],
-          ui: ['framer-motion', 'lucide-react'],
-        },
-      },
-    },
+    sourcemap: true, // Enable sourcemaps for easier debugging
   },
 })

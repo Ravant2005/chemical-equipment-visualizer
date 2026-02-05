@@ -36,14 +36,10 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:3000',
     'http://localhost:5173',
     'http://127.0.0.1:5173',
-    'https://*.vercel.app',
 ]
 FRONTEND_URL = os.environ.get('FRONTEND_URL')
-BACKEND_URL = os.environ.get('BACKEND_URL')
 if FRONTEND_URL:
     CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
-if BACKEND_URL:
-    CSRF_TRUSTED_ORIGINS.append(BACKEND_URL)
 
 # --- APPLICATION DEFINITION ---
 
@@ -144,14 +140,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # --- SECURITY SETTINGS (Production) ---
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SAMESITE = 'Lax'
-
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SAMESITE = 'None'
-    CSRF_COOKIE_SAMESITE = 'None'
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
@@ -174,8 +165,8 @@ CORS_ALLOW_HEADERS = list(default_headers) + [
     "x-csrftoken",
 ]
 
-# Allow credentials for cross-origin requests
-CORS_ALLOW_CREDENTIALS = True
+# JWT auth uses Authorization headers, not cookies
+CORS_ALLOW_CREDENTIALS = False
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

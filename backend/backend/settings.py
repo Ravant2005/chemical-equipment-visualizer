@@ -8,7 +8,6 @@ from dotenv import load_dotenv
 from datetime import timedelta
 import dj_database_url
 from corsheaders.defaults import default_headers
-from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -111,15 +110,12 @@ DATABASES = {
 # PostgreSQL configuration for Render (when DATABASE_URL is set)
 DATABASE_URL = os.environ.get('DATABASE_URL')
 DATABASES['default'] = dj_database_url.config(default=DATABASE_URL, conn_max_age=500)
-# Fallback to SQLite only for local development
+# Fallback to SQLite if DATABASE_URL not set (local development)
 if not DATABASES['default']:
-    if DEBUG:
-        DATABASES['default'] = {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    else:
-        raise ImproperlyConfigured("DATABASE_URL must be set in production.")
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
 
 # --- PASSWORD VALIDATION ---
 AUTH_PASSWORD_VALIDATORS = [

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Trash2, Eye, Download } from 'lucide-react';
-import api, { datasetAPI } from '../services/api';
+import { datasetAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -39,11 +39,18 @@ const History = () => {
 
   const handleDownload = async (id) => {
     try {
-      const token = localStorage.getItem('token');
-      const baseUrl = api?.defaults?.baseURL || '';
-      const url = `${baseUrl}/datasets/${id}/generate_report/?token=${token}`;
-      window.open(url, '_blank');
-      toast.success('Report opened in new tab!');
+      const response = await datasetAPI.generateReport(id);
+      const contentType = response.headers?.['content-type'] || 'application/pdf';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `equipment-report-${id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Report downloaded!');
     } catch (error) {
       toast.error('Failed to generate report');
     }

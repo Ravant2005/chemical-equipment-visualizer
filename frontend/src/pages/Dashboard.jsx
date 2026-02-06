@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, Download, TrendingUp, Activity, Thermometer, Gauge } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
-import api, { datasetAPI } from '../services/api';
+import { datasetAPI } from '../services/api';
 import toast from 'react-hot-toast';
 import Navbar from '../components/Navbar';
 import AnimatedBackground from '../components/AnimatedBackground';
@@ -36,11 +36,18 @@ const Dashboard = () => {
     if (!dataset) return;
     
     try {
-      const token = localStorage.getItem('token');
-      const baseUrl = api?.defaults?.baseURL || '';
-      const url = `${baseUrl}/datasets/${dataset.id}/generate_report/?token=${token}`;
-      window.open(url, '_blank');
-      toast.success('Report opened in new tab!');
+      const response = await datasetAPI.generateReport(dataset.id);
+      const contentType = response.headers?.['content-type'] || 'application/pdf';
+      const blob = new Blob([response.data], { type: contentType });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `equipment-report-${dataset.id}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success('Report downloaded!');
     } catch (error) {
       console.error('Report generation error:', error);
       toast.error('Failed to generate report');

@@ -59,7 +59,7 @@ export const datasetAPI = {
   upload: (file) => {
     const formData = new FormData();
     formData.append('file', file);
-    return api.post('/datasets/upload/', formData, {
+    return api.post('/equipments/datasets/upload/', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -67,22 +67,22 @@ export const datasetAPI = {
   },
   
   getAll: () =>
-    api.get('/datasets/'),
+    api.get('/equipments/datasets/'),
   
   getById: (id) =>
-    api.get(`/datasets/${id}/`),
+    api.get(`/equipments/datasets/${id}/`),
   
   getSummary: (id) =>
-    api.get(`/datasets/${id}/summary/`),
+    api.get(`/equipments/datasets/${id}/summary/`),
   
   getHistory: () =>
-    api.get('/datasets/history/'),
+    api.get('/equipments/datasets/history/'),
   
   delete: (id) =>
-    api.delete(`/datasets/${id}/`),
+    api.delete(`/equipments/datasets/${id}/`),
   
   generateReport: (id) =>
-    api.get(`/datasets/${id}/generate_report/`, {
+    api.get(`/equipments/datasets/${id}/generate_report/`, {
       responseType: 'blob',
       headers: {
         'Accept': 'application/pdf'

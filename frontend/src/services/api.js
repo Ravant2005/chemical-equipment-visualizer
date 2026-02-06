@@ -84,9 +84,6 @@ export const datasetAPI = {
   generateReport: (id) =>
     api.get(`/equipments/datasets/${id}/generate_report/`, {
       responseType: 'blob',
-      headers: {
-        'Accept': 'application/pdf'
-      }
     }),
 };
 

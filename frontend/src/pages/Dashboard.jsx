@@ -261,6 +261,15 @@ const Dashboard = () => {
           </>
         )}
       </div>
+
+      <a
+        href="/sample_equipment_data.csv"
+        download
+        className="fixed bottom-6 right-6 z-20 px-5 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 font-semibold text-base shadow-lg glow-effect button-glow flex items-center space-x-2"
+      >
+        <Download className="w-5 h-5" />
+        <span>Sample CSV File</span>
+      </a>
     </div>
   );
 };

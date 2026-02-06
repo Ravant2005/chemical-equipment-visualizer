@@ -2,6 +2,11 @@
 
 ChemViz Pro is a full-stack analytics platform for chemical equipment data. It includes a Django REST API, a Vite + React web dashboard, and a PyQt5 + Matplotlib desktop app. Users can upload CSV data, visualize equipment metrics, view history, and download PDF reports.
 
+**Live Web App**
+```text
+https://chemical-equipment-visualizer-chi.vercel.app
+```
+
 **Features**
 - Secure JWT authentication (register/login)
 - CSV upload with validation

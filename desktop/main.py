@@ -17,7 +17,7 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QLineEdit, QFileDialog, QTableWidget,
                               QTableWidgetItem, QTabWidget, QMessageBox, QTextEdit, QGroupBox,
-                              QFormLayout, QStackedWidget, QFrame, QButtonGroup)
+                              QFormLayout, QStackedWidget, QFrame, QButtonGroup, QSplitter)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPalette
 
@@ -568,21 +568,34 @@ class MainWindow(QMainWindow):
         report_layout.addWidget(self.download_btn)
         layout.addLayout(report_layout)
         
-        # Charts
-        charts_layout = QHBoxLayout()
+        # Analysis area (charts + table) with resizable splitter
+        analysis_splitter = QSplitter(Qt.Vertical)
+        analysis_splitter.setStyleSheet("QSplitter::handle { background-color: #1e293b; }")
+
+        charts_container = QWidget()
+        charts_layout = QHBoxLayout(charts_container)
+        charts_layout.setContentsMargins(0, 0, 0, 0)
+        charts_layout.setSpacing(16)
         self.chart1 = ChartWidget()
         self.chart2 = ChartWidget()
-        charts_layout.addWidget(self.chart1)
-        charts_layout.addWidget(self.chart2)
-        layout.addLayout(charts_layout)
-        
-        # Data table
+        charts_layout.addWidget(self.chart1, 1)
+        charts_layout.addWidget(self.chart2, 1)
+        analysis_splitter.addWidget(charts_container)
+
         table_group = QGroupBox("Equipment Data")
         table_layout = QVBoxLayout()
         self.data_table = QTableWidget()
+        self.data_table.setMinimumHeight(220)
+        self.data_table.horizontalHeader().setStretchLastSection(True)
+        self.data_table.verticalHeader().setDefaultSectionSize(28)
         table_layout.addWidget(self.data_table)
         table_group.setLayout(table_layout)
-        layout.addWidget(table_group)
+        analysis_splitter.addWidget(table_group)
+
+        analysis_splitter.setStretchFactor(0, 2)
+        analysis_splitter.setStretchFactor(1, 1)
+
+        layout.addWidget(analysis_splitter, 1)
         
         return widget
     

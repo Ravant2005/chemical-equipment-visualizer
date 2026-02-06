@@ -304,13 +304,13 @@ Set the backend URL before running the app:
 
 ```bash
 # Linux/macOS
-export CHEMVIZ_API_URL="https://your-backend-app.railway.app/api"
+export CHEMVIZ_API_URL="https://your-backend.onrender.com/api"
 
 # Windows (Command Prompt)
-set CHEMVIZ_API_URL=https://your-backend-app.railway.app/api
+set CHEMVIZ_API_URL=https://your-backend.onrender.com/api
 
 # Windows (PowerShell)
-$env:CHEMVIZ_API_URL="https://your-backend-app.railway.app/api"
+$env:CHEMVIZ_API_URL="https://your-backend.onrender.com/api"
 
 # Run the app
 ./ChemVizPro-Linux  # or ChemVizPro-Windows.exe
@@ -322,7 +322,7 @@ The desktop app has a built-in API URL configuration:
 
 1. Launch the app
 2. Click **"⚙️ Configure API URL"** button
-3. Enter your backend URL: `https://your-backend-app.railway.app/api`
+3. Enter your backend URL: `https://your-backend.onrender.com/api`
 4. Click OK
 
 ### Option 3: Edit Configuration File
@@ -331,7 +331,7 @@ Create a `.env` file in the same directory as the executable:
 
 ```env
 # .env file
-CHEMVIZ_API_URL=https://your-backend-app.railway.app/api
+CHEMVIZ_API_URL=https://your-backend.onrender.com/api
 ```
 
 ---
@@ -359,6 +359,39 @@ CHEMVIZ_API_URL=https://your-backend-app.railway.app/api
    - Free hosting
    - Large community
    - Easy updates
+
+---
+
+## Automated Cross-Platform Builds (Recommended)
+
+This repo includes a GitHub Actions workflow that builds the desktop app for **Windows**, **macOS**, and **Linux** and attaches the binaries to a GitHub Release.
+
+Workflow file:
+- `.github/workflows/desktop-release.yml`
+
+### Release Steps
+
+1. Commit and push your changes to GitHub.
+2. Create and push a version tag (example):
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+3. In GitHub → **Actions**, wait for **Build Desktop Apps (Windows/macOS/Linux)** to finish.
+4. In GitHub → **Releases**, download the assets:
+   - `ChemVizPro-Windows.exe`
+   - `ChemVizPro-macOS`
+   - `ChemVizPro-Linux`
+
+### Using “latest” Download Links
+
+GitHub provides stable URLs you can use in your web frontend download button:
+
+```text
+https://github.com/<owner>/<repo>/releases/latest/download/ChemVizPro-Windows.exe
+https://github.com/<owner>/<repo>/releases/latest/download/ChemVizPro-macOS.zip
+https://github.com/<owner>/<repo>/releases/latest/download/ChemVizPro-Linux.tar.gz
+```
 
 ---
 
@@ -452,7 +485,7 @@ pyinstaller --onefile --console --name "ChemVizPro-Debug" main.py
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `CHEMVIZ_API_URL` | Backend API URL | `https://your-backend.railway.app/api` |
+| `CHEMVIZ_API_URL` | Backend API URL | `https://your-backend.onrender.com/api` |
 | `PYTHON_CMD` | Python interpreter | `python3` |
 
 ---
@@ -475,4 +508,3 @@ For issues with:
 ---
 
 **Free. Open Source. Cross-Platform.**
-

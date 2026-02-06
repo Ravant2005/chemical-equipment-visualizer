@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, Download, TrendingUp, Activity, Thermometer, Gauge } from 'lucide-react';
+import { Upload, FileText, Download, TrendingUp, Activity, Thermometer, Gauge, MonitorDown } from 'lucide-react';
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, LineElement, PointElement, ArcElement, Title, Tooltip, Legend } from 'chart.js';
 import { Bar, Line, Pie } from 'react-chartjs-2';
 import { datasetAPI } from '../services/api';
@@ -15,6 +15,28 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef(null);
+
+  const getDesktopDownloadUrl = () => {
+    const urls = {
+      windows: import.meta.env.VITE_DESKTOP_WINDOWS_URL,
+      mac: import.meta.env.VITE_DESKTOP_MAC_URL,
+      linux: import.meta.env.VITE_DESKTOP_LINUX_URL,
+    };
+
+    const platform = (
+      navigator.userAgentData?.platform ||
+      navigator.platform ||
+      navigator.userAgent ||
+      ''
+    ).toLowerCase();
+
+    let key = 'windows';
+    if (platform.includes('mac')) key = 'mac';
+    else if (platform.includes('linux')) key = 'linux';
+    else if (platform.includes('win')) key = 'windows';
+
+    return urls[key] || urls.windows || urls.mac || urls.linux;
+  };
 
   const handleFileUpload = async (e) => {
     const file = e.target.files[0];
@@ -52,6 +74,23 @@ const Dashboard = () => {
       console.error('Report generation error:', error);
       toast.error('Failed to generate report');
     }
+  };
+
+  const handleDownloadDesktopApp = () => {
+    const url = getDesktopDownloadUrl();
+    if (!url) {
+      toast.error('Desktop download is not configured yet.');
+      return;
+    }
+
+    // Use a direct navigation to a release asset URL so the browser downloads it.
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   };
 
   // Chart data
@@ -208,6 +247,16 @@ const Dashboard = () => {
             >
               <Download className="w-6 h-6" />
               <span>Generate PDF Report</span>
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleDownloadDesktopApp}
+              className="w-full py-4 mt-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 font-semibold text-lg glow-effect button-glow flex items-center justify-center space-x-3"
+            >
+              <MonitorDown className="w-6 h-6" />
+              <span>Download Desktop App</span>
             </motion.button>
           </>
         )}

@@ -45,18 +45,18 @@ class APIClient:
             self.base_url = base_url
         else:
             # Use environment variable `CHEMVIZ_API_URL` in production.
-            # Default to a production placeholder — replace with your actual backend URL.
-            self.base_url = os.environ.get('CHEMVIZ_API_URL', 'https://your-backend.railway.app/api')
+            # Default to the Render backend URL; override as needed.
+            self.base_url = os.environ.get('CHEMVIZ_API_URL', 'https://chemical-equipment-visualizer-t6zk.onrender.com/api')
         self.token = None
         self.headers = {"Content-Type": "application/json"}
     
     def set_token(self, token):
         self.token = token
-        self.headers["Authorization"] = f"Token {token}"
+        self.headers["Authorization"] = f"Bearer {token}"
     
     def login(self, username, password):
         response = requests.post(
-            f"{self.base_url}/auth/login/",
+            f"{self.base_url}/accounts/auth/login/",
             json={"username": username, "password": password}
         )
         if response.status_code == 200:
@@ -67,7 +67,7 @@ class APIClient:
     
     def register(self, username, email, password):
         response = requests.post(
-            f"{self.base_url}/auth/register/",
+            f"{self.base_url}/accounts/auth/register/",
             json={"username": username, "email": email, "password": password}
         )
         if response.status_code == 201:
@@ -80,9 +80,9 @@ class APIClient:
         with open(file_path, 'rb') as f:
             files = {'file': f}
             response = requests.post(
-                f"{self.base_url}/datasets/upload/",
+                f"{self.base_url}/equipments/datasets/upload/",
                 files=files,
-                headers={"Authorization": f"Token {self.token}"}
+                headers={"Authorization": f"Bearer {self.token}"}
             )
         if response.status_code == 201:
             return response.json()
@@ -90,7 +90,7 @@ class APIClient:
     
     def get_history(self):
         response = requests.get(
-            f"{self.base_url}/datasets/history/",
+            f"{self.base_url}/equipments/datasets/history/",
             headers=self.headers
         )
         if response.status_code == 200:
@@ -99,12 +99,21 @@ class APIClient:
     
     def get_dataset(self, dataset_id):
         response = requests.get(
-            f"{self.base_url}/datasets/{dataset_id}/",
+            f"{self.base_url}/equipments/datasets/{dataset_id}/",
             headers=self.headers
         )
         if response.status_code == 200:
             return response.json()
         raise Exception("Failed to fetch dataset")
+
+    def generate_report(self, dataset_id):
+        response = requests.get(
+            f"{self.base_url}/equipments/datasets/{dataset_id}/generate_report/",
+            headers=self.headers
+        )
+        if response.status_code == 200:
+            return response.content
+        raise Exception("Failed to generate report")
 
 
 class LoginWindow(QWidget):
@@ -415,10 +424,10 @@ class MainWindow(QMainWindow):
         main_layout.addWidget(header)
         
         # Tabs
-        tabs = QTabWidget()
-        tabs.addTab(self.create_dashboard_tab(), "Dashboard")
-        tabs.addTab(self.create_history_tab(), "History")
-        main_layout.addWidget(tabs)
+        self.tabs = QTabWidget()
+        self.tabs.addTab(self.create_dashboard_tab(), "Dashboard")
+        self.tabs.addTab(self.create_history_tab(), "History")
+        main_layout.addWidget(self.tabs)
     
     def create_header(self):
         header = QWidget()
@@ -467,6 +476,16 @@ class MainWindow(QMainWindow):
         self.stats_layout = QFormLayout()
         stats_group.setLayout(self.stats_layout)
         layout.addWidget(stats_group)
+
+        # Report download
+        report_layout = QHBoxLayout()
+        report_layout.addStretch()
+        self.download_btn = QPushButton("Download PDF Report")
+        self.download_btn.setStyleSheet("background-color: #10b981;")
+        self.download_btn.setEnabled(False)
+        self.download_btn.clicked.connect(self.download_current_report)
+        report_layout.addWidget(self.download_btn)
+        layout.addLayout(report_layout)
         
         # Charts
         charts_layout = QHBoxLayout()
@@ -489,10 +508,24 @@ class MainWindow(QMainWindow):
     def create_history_tab(self):
         widget = QWidget()
         layout = QVBoxLayout(widget)
-        
+
+        controls = QHBoxLayout()
         refresh_btn = QPushButton("Refresh History")
         refresh_btn.clicked.connect(self.load_history)
-        layout.addWidget(refresh_btn)
+        controls.addWidget(refresh_btn)
+
+        view_btn = QPushButton("View Selected")
+        view_btn.setStyleSheet("background-color: #8b5cf6;")
+        view_btn.clicked.connect(self.view_selected_history)
+        controls.addWidget(view_btn)
+
+        download_btn = QPushButton("Download Report")
+        download_btn.setStyleSheet("background-color: #10b981;")
+        download_btn.clicked.connect(self.download_selected_report)
+        controls.addWidget(download_btn)
+
+        controls.addStretch()
+        layout.addLayout(controls)
         
         self.history_table = QTableWidget()
         self.history_table.setColumnCount(5)
@@ -559,6 +592,8 @@ class MainWindow(QMainWindow):
                 self.data_table.setItem(i, 2, QTableWidgetItem(f"{eq['flowrate']:.1f}"))
                 self.data_table.setItem(i, 3, QTableWidgetItem(f"{eq['pressure']:.1f}"))
                 self.data_table.setItem(i, 4, QTableWidgetItem(f"{eq['temperature']:.1f}"))
+
+        self.download_btn.setEnabled(True)
     
     def load_history(self):
         try:
@@ -566,13 +601,68 @@ class MainWindow(QMainWindow):
             self.history_table.setRowCount(len(datasets))
             
             for i, ds in enumerate(datasets):
-                self.history_table.setItem(i, 0, QTableWidgetItem(ds['filename']))
+                filename_item = QTableWidgetItem(ds['filename'])
+                filename_item.setData(Qt.UserRole, ds['id'])
+                self.history_table.setItem(i, 0, filename_item)
                 self.history_table.setItem(i, 1, QTableWidgetItem(ds['uploaded_at'][:19]))
                 self.history_table.setItem(i, 2, QTableWidgetItem(str(ds['total_count'])))
                 self.history_table.setItem(i, 3, QTableWidgetItem(f"{ds['avg_flowrate']:.2f}"))
                 self.history_table.setItem(i, 4, QTableWidgetItem(f"{ds['avg_pressure']:.2f}"))
         except Exception as e:
             QMessageBox.critical(self, "Error", f"Failed to load history: {str(e)}")
+
+    def get_selected_history_id(self):
+        row = self.history_table.currentRow()
+        if row < 0:
+            return None
+        item = self.history_table.item(row, 0)
+        if not item:
+            return None
+        return item.data(Qt.UserRole)
+
+    def view_selected_history(self):
+        dataset_id = self.get_selected_history_id()
+        if not dataset_id:
+            QMessageBox.warning(self, "Select Dataset", "Please select a dataset from history.")
+            return
+        try:
+            dataset = self.api_client.get_dataset(dataset_id)
+            self.current_dataset = dataset
+            self.display_dataset(dataset)
+            self.tabs.setCurrentIndex(0)
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to load dataset: {str(e)}")
+
+    def download_current_report(self):
+        if not self.current_dataset:
+            QMessageBox.warning(self, "No Dataset", "Please upload or select a dataset first.")
+            return
+        self.download_report(self.current_dataset['id'])
+
+    def download_selected_report(self):
+        dataset_id = self.get_selected_history_id()
+        if not dataset_id:
+            QMessageBox.warning(self, "Select Dataset", "Please select a dataset from history.")
+            return
+        self.download_report(dataset_id)
+
+    def download_report(self, dataset_id):
+        try:
+            pdf_bytes = self.api_client.generate_report(dataset_id)
+            default_name = f"equipment-report-{dataset_id}.pdf"
+            save_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Save Report",
+                default_name,
+                "PDF Files (*.pdf)"
+            )
+            if not save_path:
+                return
+            with open(save_path, 'wb') as f:
+                f.write(pdf_bytes)
+            QMessageBox.information(self, "Report Saved", f"Report saved to:\n{save_path}")
+        except Exception as e:
+            QMessageBox.critical(self, "Error", f"Failed to download report: {str(e)}")
 
 
 def main():

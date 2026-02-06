@@ -1,0 +1,94 @@
+name: Build Desktop Apps (Windows/macOS/Linux)
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Linux System Dependencies
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgl1-mesa-glx \
+            libegl1-mesa \
+            libxkbcommon-x11-0
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r desktop/requirements.txt
+
+      - name: Build (PyInstaller)
+        working-directory: desktop
+        shell: bash
+        run: |
+          python -m PyInstaller --onefile --windowed --name ChemVizPro --clean --noconfirm main.py
+
+      - name: Rename Artifact
+        working-directory: desktop/dist
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            mv "ChemVizPro.exe" "ChemVizPro-Windows.exe"
+            echo "ASSET=desktop/dist/ChemVizPro-Windows.exe" >> "$GITHUB_ENV"
+          elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
+            mv "ChemVizPro" "ChemVizPro-macOS"
+            chmod +x "ChemVizPro-macOS"
+            zip -r "ChemVizPro-macOS.zip" "ChemVizPro-macOS"
+            echo "ASSET=desktop/dist/ChemVizPro-macOS.zip" >> "$GITHUB_ENV"
+          else
+            mv "ChemVizPro" "ChemVizPro-Linux"
+            chmod +x "ChemVizPro-Linux"
+            tar -czf "ChemVizPro-Linux.tar.gz" "ChemVizPro-Linux"
+            echo "ASSET=desktop/dist/ChemVizPro-Linux.tar.gz" >> "$GITHUB_ENV"
+          fi
+
+      - name: Upload Artifact (Manual Runs)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-ChemVizPro
+          path: ${{ env.ASSET }}
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release
+
+      - name: Publish GitHub Release Assets
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            release/**/ChemVizPro-Windows.exe
+            release/**/ChemVizPro-macOS.zip
+            release/**/ChemVizPro-Linux.tar.gz

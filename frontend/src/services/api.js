@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // API URL configuration
 // Supports both local development and production deployment
-const API_BASE_URL =
+export const API_BASE_URL =
   import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000/api';
 
 // Only log in development to avoid exposing production URLs in console

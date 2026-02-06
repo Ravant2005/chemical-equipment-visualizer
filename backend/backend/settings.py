@@ -133,19 +133,31 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SECURE_SSL_REDIRECT = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
 
 
 # ===============================
-# CORS CONFIG (JWT ONLY)
+# CORS & CSRF CONFIGURATION
 # ===============================
 
-CORS_ALLOWED_ORIGINS = [
-    "https://chemical-equipment-visualizer-khaki.vercel.app",
-    "http://localhost:3000",
-    "http://localhost:5173",
+# --- CORS (Cross-Origin Resource Sharing) ---
+# Use a regex to allow all Vercel domains (production and preview) and localhost.
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https://.*\.vercel\.app$",
+    r"^http://localhost:5173$",
+    r"^http://localhost:3000$",
 ]
+
+# --- CSRF (Cross-Site Request Forgery) ---
+# Trust frontend domains to allow state-changing requests (POST, etc.).
+FRONTEND_URL = os.environ.get('FRONTEND_URL')
+CSRF_TRUSTED_ORIGINS = ['https://*.vercel.app']
+if FRONTEND_URL:
+    CSRF_TRUSTED_ORIGINS.append(FRONTEND_URL)
+
 
 CORS_ALLOW_CREDENTIALS = False
 
@@ -154,10 +166,6 @@ CORS_ALLOW_HEADERS = [
     "authorization",
     "content-type",
 ]
-
-# Disable CSRF interference for JWT-only APIs
-CSRF_USE_SESSIONS = False
-CSRF_COOKIE_HTTPONLY = False
 
 # --- DJANGO REST FRAMEWORK ---
 REST_FRAMEWORK = {

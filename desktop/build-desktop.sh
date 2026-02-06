@@ -257,6 +257,10 @@ $PYTHON_CMD -m PyInstaller \
     --noconfirm \
     --distpath "./dist" \
     --workpath "./build" \
+    --hidden-import "jaraco.text" \
+    --hidden-import "jaraco.context" \
+    --hidden-import "jaraco.functools" \
+    --hidden-import "platformdirs" \
     main.py
 
 # Rename output based on OS
@@ -310,4 +314,3 @@ else
 fi
 
 exit 0
-

@@ -6,11 +6,11 @@ a = Analysis(
     pathex=[],
     binaries=[],
     datas=[],
-    hiddenimports=[],
+    hiddenimports=['jaraco.text', 'jaraco.context', 'jaraco.functools', 'platformdirs'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
-    excludes=['pkg_resources'],
+    excludes=[],
     noarchive=False,
     optimize=0,
 )

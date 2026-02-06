@@ -58,7 +58,12 @@ jobs:
         working-directory: desktop
         shell: bash
         run: |
-          python -m PyInstaller --onefile --windowed --name ChemVizPro --clean --noconfirm main.py
+          python -m PyInstaller --onefile --windowed --name ChemVizPro --clean --noconfirm \
+            --hidden-import jaraco.text \
+            --hidden-import jaraco.context \
+            --hidden-import jaraco.functools \
+            --hidden-import platformdirs \
+            main.py
 
       - name: Rename Artifact
         working-directory: desktop/dist

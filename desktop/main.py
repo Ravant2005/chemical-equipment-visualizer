@@ -17,7 +17,7 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QLineEdit, QFileDialog, QTableWidget,
                               QTableWidgetItem, QTabWidget, QMessageBox, QTextEdit, QGroupBox,
-                              QFormLayout, QStackedWidget, QInputDialog, QFrame, QButtonGroup)
+                              QFormLayout, QStackedWidget, QFrame, QButtonGroup)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPalette
 
@@ -117,7 +117,7 @@ class APIClient:
 
 
 class LoginWindow(QWidget):
-    """Login/Register window with API URL configuration"""
+    """Login/Register window"""
     login_success = pyqtSignal(dict)
     
     def __init__(self, api_client):
@@ -241,34 +241,8 @@ class LoginWindow(QWidget):
         self.auth_stack.addWidget(self._build_register_page())
         card_layout.addWidget(self.auth_stack)
 
-        settings_btn = QPushButton("API Settings")
-        settings_btn.setObjectName("settingsBtn")
-        settings_btn.setToolTip("Configure backend API URL")
-        settings_btn.clicked.connect(self.configure_api_url)
-        card_layout.addWidget(settings_btn, alignment=Qt.AlignCenter)
-
         outer.addWidget(card)
         outer.addStretch()
-    
-    def configure_api_url(self):
-        """Allow user to configure API URL"""
-        api_url, ok = QInputDialog.getText(
-            self,
-            "Configure API URL",
-            "Enter your backend API URL:",
-            QLineEdit.Normal,
-            self.api_client.base_url
-        )
-        
-        if ok and api_url:
-            # Remove trailing slash if present
-            api_url = api_url.rstrip('/')
-            # Add /api if not present
-            if not api_url.endswith('/api'):
-                api_url = f"{api_url}/api"
-            
-            self.api_client.base_url = api_url
-            QMessageBox.information(self, "API URL Updated", f"API URL set to:\n{api_url}")
 
     def _build_login_page(self):
         page = QWidget()
@@ -346,7 +320,6 @@ class LoginWindow(QWidget):
         try:
             data = self.api_client.login(username, password)
             self.login_success.emit(data)
-            self.close()
         except Exception as e:
             QMessageBox.critical(self, "Login Failed", str(e))
     
@@ -367,7 +340,6 @@ class LoginWindow(QWidget):
         try:
             data = self.api_client.register(username, email, password)
             self.login_success.emit(data)
-            self.close()
         except Exception as e:
             QMessageBox.critical(self, "Registration Failed", str(e))
 
@@ -788,10 +760,16 @@ def main():
     
     # Show login window
     login_window = LoginWindow(api_client)
+    app_state = {"main_window": None}
     
     def on_login_success(user_data):
-        main_window = MainWindow(api_client, user_data)
-        main_window.show()
+        try:
+            app_state["main_window"] = MainWindow(api_client, user_data)
+            app_state["main_window"].show()
+            login_window.hide()
+        except Exception as exc:
+            QMessageBox.critical(login_window, "Startup Error", f"Failed to open app:\n{exc}")
+            login_window.show()
     
     login_window.login_success.connect(on_login_success)
     login_window.show()

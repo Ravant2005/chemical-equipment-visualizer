@@ -17,7 +17,7 @@ logging.getLogger('matplotlib').setLevel(logging.WARNING)
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
                               QPushButton, QLabel, QLineEdit, QFileDialog, QTableWidget,
                               QTableWidgetItem, QTabWidget, QMessageBox, QTextEdit, QGroupBox,
-                              QFormLayout, QStackedWidget, QInputDialog, QLineEdit)
+                              QFormLayout, QStackedWidget, QInputDialog, QFrame, QButtonGroup)
 from PyQt5.QtCore import Qt, QThread, pyqtSignal
 from PyQt5.QtGui import QFont, QColor, QPalette
 
@@ -126,112 +126,129 @@ class LoginWindow(QWidget):
         self.init_ui()
     
     def init_ui(self):
-        self.setWindowTitle("ChemViz Pro - Login")
-        self.setGeometry(100, 100, 400, 550)
+        self.setWindowTitle("ChemViz Pro")
+        self.setObjectName("LoginWindow")
+        self.setMinimumSize(440, 640)
         self.setStyleSheet("""
-            QWidget {
-                background-color: #0f172a;
-                color: white;
+            #LoginWindow {
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                                            stop:0 #0b1230, stop:1 #1f2b5f);
+            }
+            QFrame#loginCard {
+                background-color: rgba(15, 23, 42, 0.96);
+                border: 1px solid #1e293b;
+                border-radius: 18px;
+            }
+            QLabel {
+                color: #e2e8f0;
             }
             QLineEdit {
                 padding: 12px;
                 border: 2px solid #334155;
-                border-radius: 8px;
-                background-color: #1e293b;
+                border-radius: 10px;
+                background-color: #0f172a;
                 color: white;
                 font-size: 14px;
             }
             QLineEdit:focus {
-                border-color: #3b82f6;
+                border-color: #60a5fa;
             }
             QPushButton {
-                padding: 14px;
-                border-radius: 8px;
-                font-size: 16px;
+                padding: 12px;
+                border-radius: 10px;
+                font-size: 14px;
                 font-weight: bold;
             }
-            #loginBtn {
+            QPushButton#primaryBtn {
                 background-color: #3b82f6;
                 color: white;
             }
-            #loginBtn:hover {
+            QPushButton#primaryBtn:hover {
                 background-color: #2563eb;
             }
-            #registerBtn {
+            QPushButton#secondaryBtn {
                 background-color: #8b5cf6;
                 color: white;
             }
-            #registerBtn:hover {
+            QPushButton#secondaryBtn:hover {
                 background-color: #7c3aed;
             }
-            #settingsBtn {
-                background-color: #475569;
-                color: white;
-                font-size: 12px;
-                padding: 8px;
+            QPushButton#toggleBtn {
+                background-color: transparent;
+                border: 1px solid #334155;
+                color: #94a3b8;
             }
-            #settingsBtn:hover {
-                background-color: #64748b;
+            QPushButton#toggleBtn:checked {
+                background-color: #3b82f6;
+                color: white;
+                border-color: #3b82f6;
+            }
+            QPushButton#settingsBtn {
+                background-color: #1e293b;
+                color: #cbd5f5;
+                font-size: 12px;
+                padding: 8px 12px;
+            }
+            QPushButton#settingsBtn:hover {
+                background-color: #334155;
             }
         """)
-        
-        layout = QVBoxLayout()
-        layout.setSpacing(15)
-        layout.setContentsMargins(40, 30, 40, 30)
-        
-        # Title
+
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(40, 30, 40, 30)
+        outer.addStretch()
+
+        card = QFrame()
+        card.setObjectName("loginCard")
+        card_layout = QVBoxLayout(card)
+        card_layout.setSpacing(14)
+        card_layout.setContentsMargins(28, 28, 28, 28)
+
         title = QLabel("ChemViz Pro")
-        title.setFont(QFont("Arial", 32, QFont.Bold))
+        title.setFont(QFont("Arial", 28, QFont.Bold))
         title.setAlignment(Qt.AlignCenter)
-        title.setStyleSheet("color: #60a5fa; margin-bottom: 10px;")
-        layout.addWidget(title)
-        
+        title.setStyleSheet("color: #7dd3fc;")
+        card_layout.addWidget(title)
+
         subtitle = QLabel("Equipment Analytics Platform")
         subtitle.setAlignment(Qt.AlignCenter)
-        subtitle.setStyleSheet("color: #94a3b8; margin-bottom: 20px;")
-        layout.addWidget(subtitle)
-        
-        # Settings button for API URL
-        settings_btn = QPushButton("⚙️ Configure API URL")
+        subtitle.setStyleSheet("color: #94a3b8; margin-bottom: 8px;")
+        card_layout.addWidget(subtitle)
+
+        toggle_layout = QHBoxLayout()
+        toggle_group = QButtonGroup(self)
+        toggle_group.setExclusive(True)
+
+        self.login_toggle = QPushButton("Login")
+        self.login_toggle.setObjectName("toggleBtn")
+        self.login_toggle.setCheckable(True)
+        self.login_toggle.setChecked(True)
+        self.login_toggle.clicked.connect(lambda: self.auth_stack.setCurrentIndex(0))
+        toggle_group.addButton(self.login_toggle)
+        toggle_layout.addWidget(self.login_toggle)
+
+        self.register_toggle = QPushButton("Register")
+        self.register_toggle.setObjectName("toggleBtn")
+        self.register_toggle.setCheckable(True)
+        self.register_toggle.clicked.connect(lambda: self.auth_stack.setCurrentIndex(1))
+        toggle_group.addButton(self.register_toggle)
+        toggle_layout.addWidget(self.register_toggle)
+
+        card_layout.addLayout(toggle_layout)
+
+        self.auth_stack = QStackedWidget()
+        self.auth_stack.addWidget(self._build_login_page())
+        self.auth_stack.addWidget(self._build_register_page())
+        card_layout.addWidget(self.auth_stack)
+
+        settings_btn = QPushButton("API Settings")
         settings_btn.setObjectName("settingsBtn")
-        settings_btn.setToolTip("Click to set your backend API URL")
+        settings_btn.setToolTip("Configure backend API URL")
         settings_btn.clicked.connect(self.configure_api_url)
-        layout.addWidget(settings_btn)
-        
-        # API URL display
-        self.api_url_label = QLabel(f"API: {self.api_client.base_url}")
-        self.api_url_label.setAlignment(Qt.AlignCenter)
-        self.api_url_label.setStyleSheet("color: #64748b; font-size: 11px; margin-bottom: 10px;")
-        self.api_url_label.setWordWrap(True)
-        layout.addWidget(self.api_url_label)
-        
-        # Form
-        self.username_input = QLineEdit()
-        self.username_input.setPlaceholderText("Username")
-        layout.addWidget(self.username_input)
-        
-        self.email_input = QLineEdit()
-        self.email_input.setPlaceholderText("Email (for registration)")
-        layout.addWidget(self.email_input)
-        
-        self.password_input = QLineEdit()
-        self.password_input.setPlaceholderText("Password")
-        self.password_input.setEchoMode(QLineEdit.Password)
-        layout.addWidget(self.password_input)
-        
-        # Buttons
-        login_btn = QPushButton("Login")
-        login_btn.setObjectName("loginBtn")
-        login_btn.clicked.connect(self.handle_login)
-        layout.addWidget(login_btn)
-        
-        register_btn = QPushButton("Register")
-        register_btn.setObjectName("registerBtn")
-        register_btn.clicked.connect(self.handle_register)
-        layout.addWidget(register_btn)
-        
-        layout.addStretch()
-        self.setLayout(layout)
+        card_layout.addWidget(settings_btn, alignment=Qt.AlignCenter)
+
+        outer.addWidget(card)
+        outer.addStretch()
     
     def configure_api_url(self):
         """Allow user to configure API URL"""
@@ -251,12 +268,76 @@ class LoginWindow(QWidget):
                 api_url = f"{api_url}/api"
             
             self.api_client.base_url = api_url
-            self.api_url_label.setText(f"API: {api_url}")
             QMessageBox.information(self, "API URL Updated", f"API URL set to:\n{api_url}")
+
+    def _build_login_page(self):
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setSpacing(12)
+
+        heading = QLabel("Welcome Back")
+        heading.setFont(QFont("Arial", 18, QFont.Bold))
+        heading.setAlignment(Qt.AlignCenter)
+        heading.setStyleSheet("color: #e2e8f0; margin-top: 6px;")
+        layout.addWidget(heading)
+
+        self.login_username_input = QLineEdit()
+        self.login_username_input.setPlaceholderText("Username")
+        layout.addWidget(self.login_username_input)
+
+        self.login_password_input = QLineEdit()
+        self.login_password_input.setPlaceholderText("Password")
+        self.login_password_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.login_password_input)
+
+        login_btn = QPushButton("Login")
+        login_btn.setObjectName("primaryBtn")
+        login_btn.clicked.connect(self.handle_login)
+        layout.addWidget(login_btn)
+
+        layout.addStretch()
+        return page
+
+    def _build_register_page(self):
+        page = QWidget()
+        layout = QVBoxLayout(page)
+        layout.setSpacing(12)
+
+        heading = QLabel("Create Account")
+        heading.setFont(QFont("Arial", 18, QFont.Bold))
+        heading.setAlignment(Qt.AlignCenter)
+        heading.setStyleSheet("color: #e2e8f0; margin-top: 6px;")
+        layout.addWidget(heading)
+
+        self.reg_username_input = QLineEdit()
+        self.reg_username_input.setPlaceholderText("Username")
+        layout.addWidget(self.reg_username_input)
+
+        self.reg_email_input = QLineEdit()
+        self.reg_email_input.setPlaceholderText("Email")
+        layout.addWidget(self.reg_email_input)
+
+        self.reg_password_input = QLineEdit()
+        self.reg_password_input.setPlaceholderText("Password")
+        self.reg_password_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.reg_password_input)
+
+        self.reg_confirm_input = QLineEdit()
+        self.reg_confirm_input.setPlaceholderText("Confirm Password")
+        self.reg_confirm_input.setEchoMode(QLineEdit.Password)
+        layout.addWidget(self.reg_confirm_input)
+
+        register_btn = QPushButton("Create Account")
+        register_btn.setObjectName("secondaryBtn")
+        register_btn.clicked.connect(self.handle_register)
+        layout.addWidget(register_btn)
+
+        layout.addStretch()
+        return page
     
     def handle_login(self):
-        username = self.username_input.text()
-        password = self.password_input.text()
+        username = self.login_username_input.text()
+        password = self.login_password_input.text()
         
         if not username or not password:
             QMessageBox.warning(self, "Error", "Please fill all fields")
@@ -270,12 +351,17 @@ class LoginWindow(QWidget):
             QMessageBox.critical(self, "Login Failed", str(e))
     
     def handle_register(self):
-        username = self.username_input.text()
-        email = self.email_input.text()
-        password = self.password_input.text()
+        username = self.reg_username_input.text()
+        email = self.reg_email_input.text()
+        password = self.reg_password_input.text()
+        confirm_password = self.reg_confirm_input.text()
         
-        if not username or not email or not password:
+        if not username or not email or not password or not confirm_password:
             QMessageBox.warning(self, "Error", "Please fill all fields")
+            return
+
+        if password != confirm_password:
+            QMessageBox.warning(self, "Error", "Passwords do not match")
             return
         
         try:
@@ -295,14 +381,29 @@ class ChartWidget(QWidget):
         layout = QVBoxLayout()
         layout.addWidget(self.canvas)
         self.setLayout(layout)
+
+    def _show_empty(self, message):
+        self.figure.clear()
+        ax = self.figure.add_subplot(111)
+        ax.set_facecolor('#1e293b')
+        ax.text(0.5, 0.5, message, ha='center', va='center', color='white', fontsize=12)
+        ax.set_xticks([])
+        ax.set_yticks([])
+        self.canvas.draw()
     
     def plot_distribution(self, distribution):
+        if not distribution:
+            self._show_empty("No distribution data available")
+            return
         self.figure.clear()
         ax = self.figure.add_subplot(111)
         ax.set_facecolor('#1e293b')
         
         labels = list(distribution.keys())
         values = list(distribution.values())
+        if not values or sum(values) <= 0:
+            self._show_empty("No distribution data available")
+            return
         colors = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981']
         
         ax.pie(values, labels=labels, autopct='%1.1f%%', colors=colors,
@@ -311,6 +412,9 @@ class ChartWidget(QWidget):
         self.canvas.draw()
     
     def plot_parameters(self, equipment_data):
+        if not equipment_data:
+            self._show_empty("No equipment data available")
+            return
         self.figure.clear()
         ax = self.figure.add_subplot(111)
         ax.set_facecolor('#1e293b')
@@ -440,8 +544,13 @@ class MainWindow(QMainWindow):
         layout.addWidget(title)
         
         layout.addStretch()
-        
-        user_label = QLabel(f"User: {self.user_data['user']['username']}")
+
+        username = None
+        if isinstance(self.user_data, dict):
+            username = self.user_data.get('user', {}).get('username') or self.user_data.get('username')
+        if not username:
+            username = "User"
+        user_label = QLabel(f"User: {username}")
         user_label.setStyleSheet("color: #94a3b8; font-size: 14px;")
         layout.addWidget(user_label)
         
@@ -559,6 +668,9 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Error", str(e))
     
     def display_dataset(self, dataset):
+        if not isinstance(dataset, dict):
+            QMessageBox.critical(self, "Error", "Invalid dataset format received from API.")
+            return
         # Clear previous stats
         while self.stats_layout.count():
             child = self.stats_layout.takeAt(0)
@@ -566,20 +678,19 @@ class MainWindow(QMainWindow):
                 child.widget().deleteLater()
         
         # Display statistics
-        self.stats_layout.addRow("Total Equipment:", QLabel(str(dataset['total_count'])))
-        self.stats_layout.addRow("Avg Flowrate:", QLabel(f"{dataset['avg_flowrate']:.2f}"))
-        self.stats_layout.addRow("Avg Pressure:", QLabel(f"{dataset['avg_pressure']:.2f}"))
-        self.stats_layout.addRow("Avg Temperature:", QLabel(f"{dataset['avg_temperature']:.2f}"))
+        self.stats_layout.addRow("Total Equipment:", QLabel(str(dataset.get('total_count', 0))))
+        self.stats_layout.addRow("Avg Flowrate:", QLabel(f"{dataset.get('avg_flowrate', 0):.2f}"))
+        self.stats_layout.addRow("Avg Pressure:", QLabel(f"{dataset.get('avg_pressure', 0):.2f}"))
+        self.stats_layout.addRow("Avg Temperature:", QLabel(f"{dataset.get('avg_temperature', 0):.2f}"))
         
         # Plot charts
-        if dataset['equipment_distribution']:
-            self.chart1.plot_distribution(dataset['equipment_distribution'])
+        self.chart1.plot_distribution(dataset.get('equipment_distribution') or {})
         
-        if dataset.get('equipment'):
-            self.chart2.plot_parameters(dataset['equipment'])
+        equipment = dataset.get('equipment') or []
+        if equipment:
+            self.chart2.plot_parameters(equipment)
             
             # Display table
-            equipment = dataset['equipment']
             self.data_table.setRowCount(len(equipment))
             self.data_table.setColumnCount(5)
             self.data_table.setHorizontalHeaderLabels([
@@ -592,8 +703,12 @@ class MainWindow(QMainWindow):
                 self.data_table.setItem(i, 2, QTableWidgetItem(f"{eq['flowrate']:.1f}"))
                 self.data_table.setItem(i, 3, QTableWidgetItem(f"{eq['pressure']:.1f}"))
                 self.data_table.setItem(i, 4, QTableWidgetItem(f"{eq['temperature']:.1f}"))
+        else:
+            self.chart2.plot_parameters([])
+            self.data_table.setRowCount(0)
+            self.data_table.setColumnCount(0)
 
-        self.download_btn.setEnabled(True)
+        self.download_btn.setEnabled(bool(dataset.get('id')))
     
     def load_history(self):
         try:

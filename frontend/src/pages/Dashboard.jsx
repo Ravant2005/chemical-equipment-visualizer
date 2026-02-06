@@ -209,6 +209,16 @@ const Dashboard = () => {
           </div>
         </motion.div>
 
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleDownloadDesktopApp}
+          className="w-full py-4 mb-10 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 font-semibold text-lg glow-effect button-glow flex items-center justify-center space-x-3"
+        >
+          <MonitorDown className="w-6 h-6" />
+          <span>Download Desktop App</span>
+        </motion.button>
+
         {/* Statistics Cards */}
         {dataset && (
           <motion.div
@@ -247,16 +257,6 @@ const Dashboard = () => {
             >
               <Download className="w-6 h-6" />
               <span>Generate PDF Report</span>
-            </motion.button>
-
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleDownloadDesktopApp}
-              className="w-full py-4 mt-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 font-semibold text-lg glow-effect button-glow flex items-center justify-center space-x-3"
-            >
-              <MonitorDown className="w-6 h-6" />
-              <span>Download Desktop App</span>
             </motion.button>
           </>
         )}
